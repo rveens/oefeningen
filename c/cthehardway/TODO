@@ -1,0 +1,79 @@
+ex6: 	- Zoeken naar exotische 'print formats'
+	- zoeken naar verschillende manieren voor het printen van nummers. Zoek naar ocatalen en hexadecimalen en anderen die te vidnen zijn.
+
+
+ex3:
+	X een andere Makefile zoeken en deze proberen te begrijpen.
+	X de huidige Makefile verbeteren met de opgedane kennis.
+ex4:
+	- online zoeken over printf:
+		X zoeken over escape codes (/t /n etc) (ALLEMAAL)
+			o \a: geeft een beep of flash
+			o \b: beweegt de cursor naar de laatste kolom van de vorige regel. AKA een BACKSPACE
+			o \f: beweegt de cursor naar de start van de volgende pagina.
+			o \t: horizontale tab
+			o \v: verticale tab
+			o \\: escape een \ (gewoon een \ dus)
+			o %%: print een %. 
+
+		- zoeken over "Format sequences" (alles)
+			- Hoe je ze kunt aanpassen
+			- zoeken naar verschillende 'precisions'
+			- zoeken naar verschillende 'widths'	A
+
+%[flag][min width][precision][length modifier][conversion specifier]
+
+[conversion specifier]: zegt wat voor conversie je moet doen met de waarde. 
+
+	- Zo kun je f opgeven voor float
+	- Een e voor een float met wetenschappelijke notatie 
+	- (ook E maar dan ip 1,5e6 krijg je 1,5E6 dit is verder geen verschil) 
+	- Naast deze drie is er g en G 
+		o g zoekt het kortste van e en f.
+		o G zoekt het kortste voor E en F.
+(gewoon g of G gebruiken)	
+	- ook is er d of i voor gewoon een getal.
+	- o voor een octaal nummer
+	- x voor hexadecimaal
+	- X voor hexadecimaal met hoofdletters ipv kleine letters 
+[length modifier]: verandert niet de lengte van de output, ookal lijkt het dat te doen.
+	- VB: Er is verschil tussen een 'long double' en een 'double'. 
+		Dit is alleen mogelijke grote van de double. 
+		maar printf geeft wat anders als je een long double invoert zonder 
+		iets te zeggen dat het een long double is.
+	- h voor short int
+	- l voor long int.
+	- L voor long double.
+	- l voor wide character strings. (wchar_t)
+
+[precision]: Aantal punten achter de comma. wordt genoteerd als .<cijfer>
+	VB: 
+float f = 2.456978
+printf("%.3f", f);
+Dit geeft: 2.457 Hij rond dan af!
+
+	- Normaal gesproken rond hij af. bij f.
+	- bij g of G laat hij het aantal significante cijfers zien. Bijv 100.2 en dan %.3g geeft 100.
+	- Voor integers (d en i) geeft hij het minimum aantal getallen terug. Als je bijvoorbeeld een waarde met getal 56 opgeeft en je hebt als precision 3, dan krijg je 056 terug. (%.3d zou dat zijn)
+	- Als je 0 opgeeft bij integers dan geeft hij daadwerkelijk ook niks terug!
+	- bij strings geeft het de maximale lengte terug.
+[width]: Tegenovergestelde van precision. De minimale lengte.
+	- werkt hetzelfde, alleen zonder . ervoor (dus %4d bijv)
+	- printf("%5s" ,"abc"); geeft "  abc" minimaal 5.
+	- je kunt een width (min.) en precision (max) ook combineren.
+		o printf("%8.3f", 12.45); geeft: "  12.450"
+
+[flag]: beheerst de karakters die bij een string worden toegevoegd. 
+	- # is te gebruiken bij x, X of o. Het voegt de mogelijk onnodige karakters toe.
+		zo heb je bij een hexadecimaal getal 0x<getal> dit wordt weggelaten, maar met deze flag staat het erbij. (voor getallen die niet 0 zijn.)
+		Bij floats etc forceerd het een . na het getal.
+	- 0 forceerd een getal 0-en te bevatten. Dit is eigenlijk alleen maar handig als je een width instelt.
+	- + zorgt ervoor dat er bij elk getal een + of - komt te staan. Normaal gesproken staat alleen - er als een getal negatief is.
+	- - zorgt ervoor dat een getal links uitgelijnd wordt. Dit is handig als je een width specifier gebruikt, en je wil dat de spaties rechts komen in plaats van links.
+	
+
+
+Alles samen:
+
+	Deze is complex: printf( "%#010x\n", 12);
+	geeft 0x0000000c
