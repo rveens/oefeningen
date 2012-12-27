@@ -4,6 +4,7 @@
 
 int atoi1(char s[]);
 void itoa(int n, char s[]);
+void reverse(char s[]);
 
 int main(int argc, const char *argv[])
 {
@@ -11,6 +12,18 @@ int main(int argc, const char *argv[])
 
 	printf("%d", atoi1(line)+5);	
 	return 0;
+}
+
+/* trim: remove trailing blanks, tabs, newlines  */
+int trim(char s[])
+{
+	int n;
+
+	for (n = strlen(s)-1; n >= 0; n--)
+		if(s[n] != ' ' && s[n] != '\t' && s[n] != '\n')
+			break;
+	s[n+1] = '\0';
+	return n;
 }
 
 void itoa1(int n, char s[])
@@ -72,4 +85,15 @@ int atoi1(char s[])
 	for(n = 0; isdigit(s[i]); i++)
 		n = 10 * n + (s[i] - '0');
 	return sign * n;
+}
+
+void reverse(char s[])
+{
+	int i, j, c;
+
+	for (i = 0, j = strlen(s)-1;i < j; i++, j--) {
+		c = s[i];
+		s[i] = s[j];
+		s[j] = c;
+	}
 }
