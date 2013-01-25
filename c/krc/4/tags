@@ -1,0 +1,37 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ALPHANUMERIC	oef4-10.c	18;"	d	file:
+BUFSIZE	oef4-10.c	21;"	d	file:
+MAXOP	oef4-10.c	16;"	d	file:
+MAXVAL	oef4-10.c	19;"	d	file:
+NUMBER	oef4-10.c	17;"	d	file:
+buf	oef4-10.c	/^char buf[BUFSIZE];	\/* buffer for ungetch *\/$/;"	v
+clear	oef4-10.c	/^void clear(void)$/;"	f
+curbufsize	oef4-10.c	/^int curbufsize = 0;$/;"	v
+curtotalbufsize	oef4-10.c	/^int curtotalbufsize = 0;$/;"	v
+deterfunc	oef4-10.c	/^void deterfunc(char s[])$/;"	f
+duplicate	oef4-10.c	/^void duplicate(void)$/;"	f
+getch	oef4-10.c	/^int getch(void) \/* get a (possibly pushed back) character *\/$/;"	f
+getline1	oef4-10.c	/^int getline1(char s[])$/;"	f
+getop	oef4-10.c	/^int getop(char s[])$/;"	f
+getvar	oef4-10.c	/^int getvar(char name[])$/;"	f
+main	oef4-10.c	/^int main(int argc, const char *argv[])$/;"	f
+name	oef4-10.c	/^	char name[];$/;"	m	struct:pcvar	file:
+pcvar	oef4-10.c	/^struct pcvar {$/;"	s	file:
+peek	oef4-10.c	/^double peek(void)$/;"	f
+pop	oef4-10.c	/^double pop(void)$/;"	f
+push	oef4-10.c	/^void push(double f)$/;"	f
+removechar	oef4-10.c	/^int removechar(char s[], int pos)$/;"	f
+setvar	oef4-10.c	/^void setvar(char variable[], int val)$/;"	f
+sp	oef4-10.c	/^int sp = 0;		\/* next free stack position *\/$/;"	v
+swap	oef4-10.c	/^void swap(void)$/;"	f
+ungetch	oef4-10.c	/^void ungetch(int c) \/* push character back on input *\/$/;"	f
+ungets	oef4-10.c	/^void ungets(char s[])$/;"	f
+val	oef4-10.c	/^double val[MAXVAL]; 	\/* value stack *\/$/;"	v
+value	oef4-10.c	/^	int value;$/;"	m	struct:pcvar	file:
+var	oef4-10.c	/^struct pcvar var[BUFSIZE];$/;"	v	typeref:struct:pcvar
+varamount	oef4-10.c	/^int varamount = 0; 	\/\/ First available empty position.$/;"	v

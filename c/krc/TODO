@@ -1,14 +1,37 @@
 TODO
 -----------------------------------------------------------------------------
+	K&R C Exercises
+-----------------------------------------------------------------------------
 
-O hoe werkt one's complement? 
-	- wat is de carry?
-O hoe werk two's complement?
+X hoe werkt one's complement? 
+	(Most Significant Bit (MSB) (helemaal links) geeft aan of het getal 
+		negatief is of niet. 
+	Als het negatief is wordt 1 als 0 beschouwd en 0 als 1. 
+		Nadeel: 2 keer 0, en negatief en positief)
+	X wat is de carry? (Hetgeen dat eigenlijk overflowd)
+O hoe werk two's complement? 
+	(Hetzelfde als one's complement maar dan bij de negatieven + 1. 
+		bv negatieve 0 (1111111)) overflowd dan en wordt normale 0. 
+			One's complement is het hoogste getal min wat je moet hebben.
 O oef2.6, 2.7, 2.8 maken (gaan over bits)
-O Uitwerking naar oef2-2.c zoeken en vergelijken met die van mij.
+O quicksort bestuderen -> pagina 87
+X Uitwerking naar oef2-2.c zoeken en vergelijken met die van mij. (Die van mij is correct)
 
 X Opdracht oef1-24.c maken
 X grootte van een string opvragen in c.
-	-> Kan niet.
+	-> Kan niet. -> Wel: Functie strlen(char s[]) maar je moet de string doorlopen.
 X werkt char[MAXINPUT] test = "HOI"; ?
 	-> Ja.
+
+-----------------------------------------------------------------------------
+	Programming languages			book
+-----------------------------------------------------------------------------
+1	c 					K&R C
+2	c++ 					Bjorne s.. ?
+3	python					google code university ?
+
+-----------------------------------------------------------------------------
+	Other computer related diciplines 	book
+-----------------------------------------------------------------------------
+1	LaTeX					wiki book
+2	Low-level computer knowledge		nand to tetris
