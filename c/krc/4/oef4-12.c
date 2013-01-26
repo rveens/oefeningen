@@ -6,13 +6,43 @@
 #include <stdio.h>
 #include <string.h>
 
+void printd(int n);
+int ritoa(int n, char s[], int i);
 void itoa(int n, char s[]);
 void reverse(char s[]);
 
 int main(int argc, const char *argv[])
 {
+	char s[1000];
+	ritoa(124, s, 0);
 	
 	return 0;
+}
+
+/* printd: print n in decimal */
+void printd(int n)
+{
+	if (n < 0) {
+		putchar('-');
+		n = -n;
+	}
+	if(n / 10)
+		printd(n / 10);
+	putchar(n % 10 + '0');
+}
+
+int ritoa(int n, char s[], int i)
+{
+	if(n < 0) { 			// record sign
+		n = -n;			// make n positive
+		s[i++] = '-';
+	}
+
+	if(n / 10)
+		i = ritoa(n / 10, s, i);
+	s[i++] = n % 10 + '0';
+	return i;
+	// add \0 char.
 }
 
 /* itoa: convert n to characters in s */
@@ -29,7 +59,7 @@ void itoa(int n, char s[])
 	if (sign < 0)
 		s[i++] = '-';
 	s[i] = '\0';
-	reverse(s); 		// Dit moeten we voorkomen
+	reverse(s); 		// Dit moeten we voorkomen m.b.v. recursie.
 }
 
 void reverse(char s[])

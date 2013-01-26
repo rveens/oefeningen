@@ -4,8 +4,6 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-itoa	oef4-12.c	/^void itoa(int n, char s[])$/;"	f
-main	oef4-12.c	/^int main(int argc, const char *argv[])$/;"	f
-printd	oef4-12.c	/^void printd(int n)$/;"	f
-reverse	oef4-12.c	/^void reverse(char s[])$/;"	f
-ritoa	oef4-12.c	/^void ritoa(int n, char s[], int i)$/;"	f
+itoa	oef3-4.c	/^void itoa(int n, char s[])$/;"	f
+main	oef3-4.c	/^int main(int argc, const char *argv[])$/;"	f
+reverse	oef3-4.c	/^void reverse(char s[])$/;"	f
