@@ -16,6 +16,7 @@ int main(int argc, const char *argv[])
 	char s[1000];
 	ritoa(124, s, 0);
 	
+	printf("%s", s);
 	return 0;
 }
 
@@ -42,7 +43,6 @@ int ritoa(int n, char s[], int i)
 		i = ritoa(n / 10, s, i);
 	s[i++] = n % 10 + '0';
 	return i;
-	// add \0 char.
 }
 
 /* itoa: convert n to characters in s */
