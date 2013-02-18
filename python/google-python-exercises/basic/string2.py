@@ -16,14 +16,12 @@
 # If the string length is less than 3, leave it unchanged.
 # Return the resulting string.
 def verbing(s):
-  # +++your code here+++
-  if(len(s) < 3):
-    t = s
-  elif(s[-3:] == "ing"):
-    t = s + "ly"
-  else:
-    t = s + "ing"
-  return t
+  if len(s) >= 3:
+    if s[-3:] == 'ing':
+      return s + 'ly'
+    else:
+      return s + 'ing'
+  return s
 
 
 # E. not_bad
@@ -35,13 +33,9 @@ def verbing(s):
 # So 'This dinner is not that bad!' yields:
 # This dinner is good!
 def not_bad(s):
-  # +++your code here+++
-  r = ""
-  if s.find("bad") > s.find("not"):
-    r = s.replace(s[s.find("not"):s.find("bad") + 3], "good")
-  else:
-    r = s
-  return r
+  if s.find('bad') > s.find('not'):
+    s = s.replace(s[s.find('not'):s.find('bad') + 3], 'good');
+  return s
 
 
 # F. front_back
@@ -52,13 +46,24 @@ def not_bad(s):
 # Given 2 strings, a and b, return a string of the form
 #  a-front + b-front + a-back + b-back
 def front_back(a, b):
-  # +++your code here+++
-  t = len(a) + len(b)
-  if (t % 2) == 0:
-    return a + b
-  else:
-    
-  return
+  amid = len(a)/2
+  bmid = len(b)/2
+
+  if ( len(a) % 2 ) == 0:
+    a1 = a[:amid]
+    a2 = a[amid:]
+  elif ( len(a) % 2 ) == 1:
+    a1 = a[:amid+1]
+    a2 = a[amid+1:]
+
+  if ( len(b) % 2 ) == 0:
+    b1 = b[:bmid]
+    b2 = b[bmid:]
+  elif ( len(b) % 2 ) == 1:
+    b1 = b[:bmid+1]
+    b2 = b[bmid+1:]
+
+  return a1 + b1 + a2 + b2
 
 
 # Simple provided test() function used in main() to print

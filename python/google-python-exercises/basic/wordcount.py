@@ -39,7 +39,39 @@ print_words() and print_top().
 
 import sys
 
-# +++your code here+++
+dictionairy = {}
+
+def read_words(filename):
+  file = open(filename, 'rU');
+  for line in file:
+    words = line.lower().split()
+    for word in words:
+      if dictionairy.has_key(word):
+        dictionairy[word] += 1
+      else:
+        dictionairy[word] = 1
+  file.close()
+
+def print_words(filename):
+  read_words(filename)
+  for wordkey in sorted(dictionairy.keys()):
+    print wordkey, dictionairy[wordkey]  
+
+def print_top(filename):
+  read_words(filename)
+  counter = 0
+  sorted(dictionairy.values())
+  for worditem in sorted(dictionairy.items(), key = get_value, reverse = True):
+    if counter < 20:
+      print worditem[0], worditem[1]
+      counter += 1
+    else:
+      break
+
+
+def get_value(tuple):
+  return tuple[1]
+
 # Define print_words(filename) and print_top(filename) functions.
 # You could write a helper utility function that reads a file
 # and builds and returns a word/count dict for it.

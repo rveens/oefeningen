@@ -47,7 +47,23 @@ import sys
 
 def mimic_dict(filename):
   """Returns mimic dict mapping each word to list of words which follow it."""
-  # +++your code here+++
+  dict = {}
+  lastword = None
+
+  file = open(filename, 'rU')
+  text = file.read()
+
+  for word in text.split():
+    if lastword != None:
+      if len(dict[word]) == 0:
+        dict[lastword] = [word]
+      else:
+        dict[lastword].append(word)
+    lastword = word
+
+  file.close()
+
+  print dict
   return
 
 
