@@ -2,10 +2,10 @@ import sys
 
 
 def Hello(name):
-if name == 'wewt':
-  name = 'derp'
- print "Dit is een",jame
- print "hoi"
+  if name == 'wewt':
+    name = 'derp'
+  print "Dit is een",jame
+  print "hoi"
 
 # Definieer een main methode en zeg hello world.
 def main():

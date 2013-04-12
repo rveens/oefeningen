@@ -26,8 +26,8 @@ int main(int argc, const char *argv[])
 
 	/* atoi2 */
 	//printf("'%d'Appelflappenbakker\n", atoi2(s) + 10);
-	
 	char s1[] = "12345";
+
 	printf("retval: %d\n", strindex(s, s1));
 
 	return 0;
@@ -138,5 +138,10 @@ void ungetch(int c)
 /* getop: get next operator or numeric operand */
 int getop(char *s)
 {
-	
+	int c;
+
+	/* skip spaces and tabs */
+	while ( (*s = c = getch()) == ' ' || c == '\t' )
+		;
+	*++s = '\0';
 }

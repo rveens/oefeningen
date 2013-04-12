@@ -1,0 +1,1697 @@
+FUNCTION  Powerline#Functions#fugitive#GetBranch()
+Called 215 times
+Total time:   0.129427
+ Self time:   0.010371
+
+count  total (s)   self (s)
+  215   0.121210   0.002154 	let ret = fugitive#statusline()
+                            
+  215              0.006550 	let ret = substitute(ret, '\c\v\[?GIT\(([a-z0-9\-_\./:]+)\)\]?', a:symbol .' \1', 'g')
+                            
+  215              0.000528 	return ret
+
+FUNCTION  <SNR>72_BufSignIds()
+Called 52 times
+Total time:   0.001059
+ Self time:   0.001059
+
+count  total (s)   self (s)
+   52              0.000380     if !exists("b:syntastic_sign_ids")
+                                    let b:syntastic_sign_ids = []
+                                endif
+   52              0.000204     return b:syntastic_sign_ids
+
+FUNCTION  <SNR>72_uname()
+Called 208 times
+Total time:   0.003372
+ Self time:   0.003372
+
+count  total (s)   self (s)
+  208              0.001192     if !exists('s:uname')
+                                    let s:uname = system('uname')
+                                endif
+  208              0.000572     return s:uname
+
+FUNCTION  <SNR>77_repo_head_ref()
+Called 215 times
+Total time:   0.019426
+ Self time:   0.016578
+
+count  total (s)   self (s)
+  215   0.019071   0.016223   return readfile(self.dir('HEAD'))[0]
+
+FUNCTION  <SNR>77_buffer_spec()
+Called 215 times
+Total time:   0.014404
+ Self time:   0.010598
+
+count  total (s)   self (s)
+  215              0.001674     let bufname = bufname(self['#'])
+  215   0.012255   0.008449     return s:shellslash(bufname == '' ? '' : fnamemodify(bufname,':p'))
+
+FUNCTION  <SNR>72_CacheErrors()
+Called 52 times
+Total time:   2.441110
+ Self time:   0.011346
+
+count  total (s)   self (s)
+   52   0.001272   0.000435     call s:ClearCache()
+                            
+   52              0.001954     if filereadable(expand("%"))
+                            
+                                    "sub - for _ in filetypes otherwise we cant name syntax checker
+                                    "functions legally for filetypes like "gentoo-metadata"
+   52              0.000951         let fts = substitute(&ft, '-', '_', 'g')
+  104              0.000651         for ft in split(fts, '\.')
+   52   0.001342   0.000447             if SyntasticCheckable(ft)
+   52   2.422695   0.000931                 let errors = SyntaxCheckers_{ft}_GetLocList()
+                                            "keep only lines that effectively match an error/warning
+   52   0.004471   0.001190                 let errors = s:FilterLocList({'valid': 1}, errors)
+                                            "make errors have type "E" by default
+   52   0.002817   0.000782                 call SyntasticAddToErrors(errors, {'type': 'E'})
+   52   0.002028   0.001076                 call extend(s:LocList(), errors)
+   52              0.000112             endif
+   52              0.000102         endfor
+   52              0.000090     endif
+
+FUNCTION  SyntasticAddToErrors()
+Called 52 times
+Total time:   0.002035
+ Self time:   0.002035
+
+count  total (s)   self (s)
+   52              0.000544     for i in range(0, len(a:errors)-1)
+                                    for key in keys(a:options)
+                                        if !has_key(a:errors[i], key) || empty(a:errors[i][key])
+                                            let a:errors[i][key] = a:options[key]
+                                        endif
+                                    endfor
+                                endfor
+   52              0.000160     return a:errors
+
+FUNCTION  <SNR>106_AutoUpdate()
+Called 2 times
+Total time:   0.001945
+ Self time:   0.000834
+
+count  total (s)   self (s)
+    2   0.000078   0.000037     call s:LogDebugMessage('AutoUpdate called [' . a:fname . ']')
+                            
+                                " Get the filetype of the file we're about to process
+    2              0.000053     let bufnr = bufnr(a:fname)
+    2              0.000015     let ftype = getbufvar(bufnr, '&filetype')
+                            
+                                " Don't do anything if we're in the tagbar window
+    2              0.000010     if ftype == 'tagbar'
+                                    call s:LogDebugMessage('In Tagbar window, stopping processing')
+                                    return
+                                endif
+                            
+                                " Only consider the main filetype in cases like 'python.django'
+    2              0.000028     let sftype = get(split(ftype, '\.'), 0, '')
+    2   0.000064   0.000034     call s:LogDebugMessage("Vim filetype: '" . ftype . "', " . "sanitized filetype: '" . sftype . "'")
+                            
+                                " Don't do anything if the file isn't supported
+    2   0.000271   0.000027     if !s:IsValidFile(a:fname, sftype)
+                                    call s:LogDebugMessage('Not a valid file, stopping processing')
+                                    return
+                                endif
+                            
+    2              0.000007     let updated = 0
+                            
+                                " Process the file if it's unknown or the information is outdated.
+                                " Also test for entries that exist but are empty, which will be the case
+                                " if there was an error during the ctags execution.
+                                " Testing the mtime of the file is necessary in case it got changed
+                                " outside of Vim, for example by checking out a different version from a
+                                " VCS.
+    2   0.000080   0.000048     if s:known_files.has(a:fname) && !empty(s:known_files.get(a:fname))
+    2   0.000031   0.000018         let curfile = s:known_files.get(a:fname)
+                                    " if a:force || getbufvar(curfile.bufnr, '&modified') ||
+    2              0.000052         if a:force || (filereadable(a:fname) && getftime(a:fname) > curfile.mtime)
+                                        call s:LogDebugMessage('File data outdated, updating' . ' [' .  a:fname . ']')
+                                        call s:ProcessFile(a:fname, sftype)
+                                        let updated = 1
+                                    else
+    2   0.000052   0.000026             call s:LogDebugMessage('File data seems up to date' . ' [' . a:fname . ']')
+    2              0.000004         endif
+    2              0.000007     elseif !s:known_files.has(a:fname)
+                                    call s:LogDebugMessage('New file, processing [' . a:fname . ']')
+                                    call s:ProcessFile(a:fname, sftype)
+                                    let updated = 1
+                                endif
+                            
+    2   0.000032   0.000018     let fileinfo = s:known_files.get(a:fname)
+                            
+                                " If we don't have an entry for the file by now something must have gone
+                                " wrong, so don't change the tagbar content
+    2              0.000007     if empty(fileinfo)
+                                    call s:LogDebugMessage('fileinfo empty after processing' . ' [' . a:fname . ']')
+                                    return
+                                endif
+                            
+                                " Display the tagbar content if the tags have been updated or a different
+                                " file is being displayed
+    2              0.000142     if bufwinnr('__Tagbar__') != -1 && (s:new_window || updated || a:fname != s:known_files.getCurrent().fpath)
+                                    call s:RenderContent(fileinfo)
+                                endif
+                            
+                                " Call setCurrent after rendering so RenderContent can check whether the
+                                " same file is being redisplayed
+    2              0.000007     if !empty(fileinfo)
+    2   0.000050   0.000023         call s:LogDebugMessage('Setting current file [' . a:fname . ']')
+    2   0.000030   0.000018         call s:known_files.setCurrent(fileinfo)
+    2              0.000003     endif
+                            
+    2   0.000669   0.000028     call s:HighlightTag(0)
+    2   0.000052   0.000021     call s:LogDebugMessage('AutoUpdate finished successfully')
+
+FUNCTION  <SNR>77_repo()
+Called 430 times
+Total time:   0.023393
+ Self time:   0.023393
+
+count  total (s)   self (s)
+  430              0.005679   let dir = a:0 ? a:1 : (exists('b:git_dir') && b:git_dir !=# '' ? b:git_dir : fugitive#extract_git_dir(expand('%:p')))
+  430              0.001165   if dir !=# ''
+  430              0.002086     if has_key(s:repos, dir)
+  430              0.002290       let repo = get(s:repos, dir)
+  430              0.000596     else
+                                  let repo = {'git_dir': dir}
+                                  let s:repos[dir] = repo
+                                endif
+  430              0.006857     return extend(extend(repo, s:repo_prototype, 'keep'), s:abstract_prototype, 'keep')
+                              endif
+                              call s:throw('not a git repository: '.expand('%:p'))
+
+FUNCTION  Pl#Statusline()
+Called 215 times
+Total time:   0.017892
+ Self time:   0.017892
+
+count  total (s)   self (s)
+  215              0.002018 		let mode = mode()
+                            
+  215              0.000717 		if ! a:current
+                            			let mode = 'N' " Normal (non-current)
+                            		elseif mode =~# '\v(v|V|)'
+                            			let mode = 'v' " Visual mode
+                            		elseif mode =~# '\v(s|S|)'
+                            			let mode = 's' " Select mode
+                            		elseif mode =~# '\vi'
+                            			let mode = 'i' " Insert mode
+                            		elseif mode =~# '\v(R|Rv)'
+                            			let mode = 'r' " Replace mode
+                            		else
+                            			" Fallback to normal mode
+  215              0.000643 			let mode = 'n' " Normal (current)
+  215              0.000319 		endif
+                            
+  215              0.002524 		return g:Pl#THEME[a:statusline].mode_statuslines[mode]
+
+FUNCTION  <SNR>77_repo_head()
+Called 215 times
+Total time:   0.049797
+ Self time:   0.012712
+
+count  total (s)   self (s)
+  215   0.033727   0.003261     let head = s:repo().head_ref()
+                            
+  215              0.002091     if head =~# '^ref: '
+  215   0.009697   0.003078       let branch = s:sub(head,'^ref: %(refs/%(heads/|remotes/|tags/)=)=','')
+  215              0.000532     elseif head =~# '^\x\{40\}$'
+                                  " truncate hash to a:1 characters if we're in detached head mode
+                                  let len = a:0 ? a:1 : 0
+                                  let branch = len ? head[0:len-1] : ''
+                                endif
+                            
+  215              0.000513     return branch
+
+FUNCTION  eclim#display#signs#Update()
+Called 52 times
+Total time:   0.081381
+ Self time:   0.032912
+
+count  total (s)   self (s)
+   52              0.000642   if !has('signs') || !g:EclimSignLevel
+                                return
+                              endif
+                            
+   52              0.000483   let save_lazy = &lazyredraw
+   52              0.000423   set lazyredraw
+                            
+   52   0.024788   0.000846   let placeholder = eclim#display#signs#SetPlaceholder()
+                            
+                              " remove all existing signs
+   52   0.006632   0.000733   let existing = eclim#display#signs#GetExisting()
+   52              0.000226   for exists in existing
+                                if exists.name =~ '^\(qf_\)\?\(error\|info\|warning\)$'
+                                  call eclim#display#signs#Unplace(exists.id)
+                                endif
+                              endfor
+                            
+   52              0.001015   let qflist = filter(g:EclimShowQuickfixSigns ? getqflist() : [], 'bufnr("%") == v:val.bufnr')
+   52              0.000880   let loclist = filter(g:EclimShowLoclistSigns ? getloclist(0) : [], 'bufnr("%") == v:val.bufnr')
+                            
+  156              0.001437   for [list, marker, prefix] in [ [qflist, g:EclimQuickfixSignText, 'qf_'], [loclist, g:EclimLoclistSignText, '']]
+  104              0.000387     if g:EclimSignLevel >= 4
+  104              0.001584       let info = filter(copy(list), 'v:val.type == "" || tolower(v:val.type) == "i"')
+  104   0.004497   0.001826       call eclim#display#signs#Define(prefix . 'info', marker, g:EclimInfoHighlight)
+  104   0.005615   0.002128       call eclim#display#signs#PlaceAll(prefix . 'info', map(info, 'v:val.lnum'))
+  104              0.000179     endif
+                            
+  104              0.000368     if g:EclimSignLevel >= 3
+  104              0.001440       let warnings = filter(copy(list), 'tolower(v:val.type) == "w"')
+  104   0.004412   0.001767       call eclim#display#signs#Define(prefix . 'warning', marker, g:EclimWarningHighlight)
+  104   0.005522   0.002109       call eclim#display#signs#PlaceAll(prefix . 'warning', map(warnings, 'v:val.lnum'))
+  104              0.000178     endif
+                            
+  104              0.000396     if g:EclimSignLevel >= 2
+  104              0.001398       let errors = filter(copy(list), 'tolower(v:val.type) == "e"')
+  104   0.004484   0.001676       call eclim#display#signs#Define(prefix . 'error', marker, g:EclimErrorHighlight)
+  104   0.005617   0.002013       call eclim#display#signs#PlaceAll(prefix . 'error', map(errors, 'v:val.lnum'))
+  104              0.000173     endif
+  104              0.000189   endfor
+                            
+   52              0.000149   if placeholder
+                                call eclim#display#signs#RemovePlaceholder()
+                              endif
+                            
+   52              0.000391   let &lazyredraw = save_lazy
+
+FUNCTION  <SNR>72_IsRedrawRequiredAfterMake()
+Called 52 times
+Total time:   0.004049
+ Self time:   0.002097
+
+count  total (s)   self (s)
+   52   0.003779   0.001827     return !s:running_windows && (s:uname() =~ "FreeBSD" || s:uname() =~ "OpenBSD")
+
+FUNCTION  <SNR>72_HighlightErrors()
+Called 52 times
+Total time:   0.011443
+ Self time:   0.009407
+
+count  total (s)   self (s)
+   52   0.001559   0.000448     call s:ClearErrorHighlights()
+                            
+   52              0.000783     let fts = substitute(&ft, '-', '_', 'g')
+  104              0.000752     for ft in split(fts, '\.')
+                            
+   52   0.001383   0.000458         for item in s:LocList()
+                            
+                                        let force_callback = has_key(item, 'force_highlight_callback') && item['force_highlight_callback']
+                            
+                                        let group = item['type'] == 'E' ? 'SyntasticError' : 'SyntasticWarning'
+                                        if get( item, 'col' ) && !force_callback
+                                            let lastcol = col([item['lnum'], '$'])
+                                            let lcol = min([lastcol, item['col']])
+                                            call matchadd(group, '\%'.item['lnum'].'l\%'.lcol.'c')
+                                        else
+                            
+                                            if exists("*SyntaxCheckers_". ft ."_GetHighlightRegex")
+                                                let term = SyntaxCheckers_{ft}_GetHighlightRegex(item)
+                                                if len(term) > 0
+                                                    call matchadd(group, '\%' . item['lnum'] . 'l' . term)
+                                                endif
+                                            endif
+                                        endif
+                                    endfor
+   52              0.000098     endfor
+
+FUNCTION  585()
+Called 246 times
+Total time:   0.002754
+ Self time:   0.002754
+
+count  total (s)   self (s)
+  246              0.001256     let idx = self.kinddict[a:kind]
+  246              0.001033     return self.kinds[idx]
+
+FUNCTION  <SNR>72_RefreshSigns()
+Called 52 times
+Total time:   0.010043
+ Self time:   0.002162
+
+count  total (s)   self (s)
+   52   0.001721   0.000662     let old_signs = copy(s:BufSignIds())
+   52   0.006263   0.000455     call s:SignErrors()
+   52   0.001576   0.000562     call s:RemoveSigns(old_signs)
+   52              0.000295     let s:first_sign_id = s:next_sign_id
+
+FUNCTION  <SNR>72_FilterLocList()
+Called 152 times
+Total time:   0.009622
+ Self time:   0.008033
+
+count  total (s)   self (s)
+  152   0.002893   0.001304     let llist = a:0 ? a:1 : s:LocList()
+                            
+  152              0.000486     let rv = []
+                            
+  152              0.000558     for error in llist
+                            
+                                    let passes_filters = 1
+                                    for key in keys(a:filters)
+                                        if error[key] !=? a:filters[key]
+                                            let passes_filters = 0
+                                            break
+                                        endif
+                                    endfor
+                            
+                                    if passes_filters
+                                        call add(rv, error)
+                                    endif
+                                endfor
+  152              0.000341     return rv
+
+FUNCTION  eclim#display#signs#PlaceAll()
+Called 312 times
+Total time:   0.010504
+ Self time:   0.010504
+
+count  total (s)   self (s)
+  312              0.002546   let lastline = line('$')
+  312              0.001340   for line in a:list
+                                if line > 0
+                                  let line = line <= lastline ? line : lastline
+                                  exec "sign place " . line . " line=" . line . " name=" . a:name . " buffer=" . bufnr('%')
+                                endif
+                              endfor
+
+FUNCTION  573()
+Called 86 times
+Total time:   0.003667
+ Self time:   0.003667
+
+count  total (s)   self (s)
+   86              0.000300     if a:full && self.path != ''
+                                    let str = self.path . self.typeinfo.sro . self.name
+                                else
+   86              0.000324         let str = self.name
+   86              0.000193     endif
+                            
+   86              0.000428     if has_key(self.fields, 'signature')
+   86              0.000195         if a:longsig
+                                        let str .= self.fields.signature
+                                    else
+   86              0.000319             let str .= '()'
+   86              0.000110         endif
+   86              0.000100     endif
+                            
+   86              0.000177     return str
+
+FUNCTION  <SNR>72_RemoveSigns()
+Called 52 times
+Total time:   0.001014
+ Self time:   0.001014
+
+count  total (s)   self (s)
+   52              0.000213     for i in a:ids
+                                    exec "sign unplace " . i
+                                    call remove(s:BufSignIds(), index(s:BufSignIds(), i))
+                                endfor
+
+FUNCTION  <SNR>106_IsValidFile()
+Called 2 times
+Total time:   0.000244
+ Self time:   0.000218
+
+count  total (s)   self (s)
+    2   0.000052   0.000026     call s:LogDebugMessage('Checking if file is valid [' . a:fname . ']')
+                            
+    2              0.000010     if a:fname == '' || a:ftype == ''
+                                    call s:LogDebugMessage('Empty filename or type')
+                                    return 0
+                                endif
+                            
+    2              0.000075     if !filereadable(a:fname) && getbufvar(a:fname, 'netrw_tmpfile') == ''
+                                    call s:LogDebugMessage('File not readable')
+                                    return 0
+                                endif
+                            
+    2              0.000014     if !has_key(s:known_types, a:ftype)
+                                    if exists('g:tagbar_type_' . a:ftype)
+                                        " Filetype definition must have been specified in an 'ftplugin'
+                                        " file, so load it now
+                                        call s:LoadUserTypeDefs(a:ftype)
+                                    else
+                                        call s:LogDebugMessage('Unsupported filetype: ' . a:ftype)
+                                        return 0
+                                    endif
+                                endif
+                            
+    2              0.000006     return 1
+
+FUNCTION  592()
+Called 217 times
+Total time:   0.000987
+ Self time:   0.000987
+
+count  total (s)   self (s)
+  217              0.000754     return self._current
+
+FUNCTION  <SNR>99_OnCursorHold()
+Called 2 times
+Total time:   0.128902
+ Self time:   0.000214
+
+count  total (s)   self (s)
+    2   0.000246   0.000056   if !s:AllowedToCompleteInCurrentFile()
+                                return
+                              endif
+                            
+    2   0.000222   0.000040   call s:SetUpCompleteopt()
+                              " Order is important here; we need to extract any done diagnostics before
+                              " reparsing the file again
+    2   0.126729   0.000044   call s:UpdateDiagnosticNotifications()
+    2   0.001666   0.000035   call s:OnFileReadyToParse()
+
+FUNCTION  596()
+Called 2 times
+Total time:   0.000017
+ Self time:   0.000017
+
+count  total (s)   self (s)
+    2              0.000013     return has_key(self._files, a:fname)
+
+FUNCTION  eclim#display#signs#GetExisting()
+Called 104 times
+Total time:   0.014231
+ Self time:   0.014231
+
+count  total (s)   self (s)
+  104              0.000858   let bufnr = bufnr('%')
+                            
+  104              0.000712   redir => signs
+  104              0.001972   silent exec 'sign place buffer=' . bufnr
+  104              0.000657   redir END
+                            
+  104              0.000571   let existing = []
+  208              0.001733   for line in split(signs, '\n')
+  104              0.001165     if line =~ '.\{-}=.\{-}=' " only two equals to account for swedish output
+                                  call add(existing, s:ParseSign(line))
+                                endif
+  104              0.000259   endfor
+                            
+  104              0.000527   if len(a:000) > 0
+   52              0.000815     call filter(existing, "v:val['name'] == a:000[0]")
+   52              0.000111   endif
+                            
+  104              0.000348   return existing
+
+FUNCTION  eclim#display#signs#Define()
+Called 364 times
+Total time:   0.010806
+ Self time:   0.010806
+
+count  total (s)   self (s)
+  364              0.010164   exec "sign define " . a:name . " text=" . a:text . " texthl=" . a:highlight
+
+FUNCTION  <SNR>72_OSSupportsShellpipeHack()
+Called 52 times
+Total time:   0.002731
+ Self time:   0.001311
+
+count  total (s)   self (s)
+   52   0.002667   0.001247     return !s:running_windows && (s:uname() !~ "FreeBSD") && (s:uname() !~ "OpenBSD")
+
+FUNCTION  <SNR>77_buffer_commit()
+Called 215 times
+Total time:   0.019569
+ Self time:   0.005165
+
+count  total (s)   self (s)
+  215   0.019182   0.004778   return matchstr(self.spec(),'^fugitive://.\{-\}//\zs\w*')
+
+FUNCTION  593()
+Called 2 times
+Total time:   0.000012
+ Self time:   0.000012
+
+count  total (s)   self (s)
+    2              0.000009     let self._current = a:fileinfo
+
+FUNCTION  594()
+Called 6 times
+Total time:   0.000042
+ Self time:   0.000042
+
+count  total (s)   self (s)
+    6              0.000034     return get(self._files, a:fname, {})
+
+FUNCTION  fugitive#head()
+Called 215 times
+Total time:   0.067930
+ Self time:   0.005780
+
+count  total (s)   self (s)
+  215              0.001195   if !exists('b:git_dir')
+                                return ''
+                              endif
+                            
+  215   0.065405   0.003255   return s:repo().head(a:0 ? a:1 : 0)
+
+FUNCTION  <SNR>72_ClearErrorHighlights()
+Called 52 times
+Total time:   0.001111
+ Self time:   0.001111
+
+count  total (s)   self (s)
+   54              0.000323     for match in getmatches()
+    2              0.000019         if stridx(match['group'], 'Syntastic') == 0
+                                        call matchdelete(match['id'])
+                                    endif
+    2              0.000003     endfor
+
+FUNCTION  SyntaxCheckers_c_GetLocList()
+Called 52 times
+Total time:   2.421764
+ Self time:   0.012896
+
+count  total (s)   self (s)
+   52              0.000369     let makeprg = g:syntastic_c_checker . ' -x c -fsyntax-only '
+   52              0.001111     let errorformat = '%-G%f:%s:,%-G%f:%l: %#error: %#(Each undeclared '. 'identifier is reported only%.%#,%-G%f:%l: %#error: %#for '. 'each function it appears%.%#,%-GIn file included%.%#,'. '%-G %#from %f:%l\,,%f:%l:%c: %trror: %m,%f:%l:%c: '. '%tarning: %m,%f:%l:%c: %m,%f:%l: %trror: %m,'. '%f:%l: %tarning: %m,%f:%l: %m'
+                            
+   52              0.000293     if exists('g:syntastic_c_errorformat')
+                                    let errorformat = g:syntastic_c_errorformat
+                                endif
+                            
+                                " add optional user-defined compiler options
+   52              0.000315     let makeprg .= g:syntastic_c_compiler_options
+                            
+   52   0.013072   0.001183     let makeprg .= ' '.shellescape(expand('%')). ' '.syntastic#c#GetIncludeDirs('c')
+                            
+                                " determine whether to parse header files as well
+   52              0.000728     if expand('%') =~? '.h$'
+                                    if exists('g:syntastic_c_check_header')
+                                        let makeprg = g:syntastic_c_checker ' -c ' . shellescape(expand('%')) . ' ' . g:syntastic_c_compiler_options . ' ' . syntastic#c#GetNullDevice() . ' ' . syntastic#c#GetIncludeDirs('c')
+                                    else
+                                        return []
+                                    endif
+                                endif
+                            
+                                " check if the user manually set some cflags
+   52              0.000290     if !exists('b:syntastic_c_cflags')
+                                    " check whether to search for include files at all
+   52              0.000404         if !exists('g:syntastic_c_no_include_search') || g:syntastic_c_no_include_search != 1
+                                        " refresh the include file search if desired
+   52              0.000438             if exists('g:syntastic_c_auto_refresh_includes') && g:syntastic_c_auto_refresh_includes != 0
+                                            let makeprg .= syntastic#c#SearchHeaders()
+                                        else
+                                            " search for header includes if not cached already
+   52              0.000301                 if !exists('b:syntastic_c_includes')
+                                                let b:syntastic_c_includes = syntastic#c#SearchHeaders()
+                                            endif
+   52              0.000302                 let makeprg .= b:syntastic_c_includes
+   52              0.000071             endif
+   52              0.000058         endif
+   52              0.000059     else
+                                    " use the user-defined cflags
+                                    let makeprg .= b:syntastic_c_cflags
+                                endif
+                            
+                                " add optional config file parameters
+   52   0.011311   0.000949     let makeprg .= ' '.syntastic#c#ReadConfig(g:syntastic_c_config_file)
+                            
+                                " process makeprg
+   52   2.387805   0.001188     let errors = SyntasticMake({ 'makeprg': makeprg, 'errorformat': errorformat })
+                            
+                                " filter the processed errors if desired
+   52              0.000576     if exists('g:syntastic_c_remove_include_errors') && g:syntastic_c_remove_include_errors != 0
+                                    return filter(errors, 'has_key(v:val, "bufnr") && v:val["bufnr"]=='.bufnr(''))
+                                else
+   52              0.000244         return errors
+                                endif
+
+FUNCTION  <SNR>106_LogDebugMessage()
+Called 12 times
+Total time:   0.000181
+ Self time:   0.000181
+
+count  total (s)   self (s)
+   12              0.000031     if s:debug
+                                    execute 'redir >> ' . s:debug_file
+                                    silent echon strftime('%H:%M:%S') . ': ' . a:msg . "\n"
+                                    redir END
+                                endif
+
+FUNCTION  eclim#display#signs#HasExisting()
+Called 52 times
+Total time:   0.006738
+ Self time:   0.006738
+
+count  total (s)   self (s)
+   52              0.000382   let bufnr = bufnr('%')
+                            
+   52              0.000331   redir => results
+   52              0.000740   silent exec 'sign place buffer=' . bufnr
+   52              0.000293   redir END
+                            
+  104              0.000786   for line in split(results, '\n')
+   52              0.000548     if line =~ '.\{-}=.\{-}=' " only two equals to account for swedish output
+                                  if len(a:000) == 0
+                                    return 1
+                                  endif
+                                  let sign = s:ParseSign(line)
+                                  if sign.name == a:000[0]
+                                    return 1
+                                  endif
+                                endif
+   52              0.000191   endfor
+                            
+   52              0.000120   return 0
+
+FUNCTION  <SNR>114_Unique()
+Called 52 times
+Total time:   0.006687
+ Self time:   0.006687
+
+count  total (s)   self (s)
+   52              0.000163     let l = []
+  364              0.000790     for elem in a:list
+  312              0.001393         if index(l, elem) == -1
+  312              0.002100             let l = add(l, elem)
+  312              0.000435         endif
+  312              0.000558     endfor
+   52              0.000100     return l
+
+FUNCTION  tagbar#currenttag()
+Called 215 times
+Total time:   0.089574
+ Self time:   0.016585
+
+count  total (s)   self (s)
+  215              0.000636     if a:0 > 0
+                                    " also test for non-zero value for backwards compatibility
+                                    let longsig   = a:1 =~# 's' || (type(a:1) == type(0) && a:1 != 0)
+                                    let fullpath  = a:1 =~# 'f'
+                                    let prototype = a:1 =~# 'p'
+                                else
+  215              0.000773         let longsig   = 0
+  215              0.000687         let fullpath  = 0
+  215              0.000741         let prototype = 0
+  215              0.000376     endif
+                            
+  215   0.013449   0.001487     if !s:Init(1)
+                                    return a:default
+                                endif
+                            
+  215   0.059413   0.002053     let tag = s:GetNearbyTag(0)
+                            
+  215              0.000665     if !empty(tag)
+   86              0.000193         if prototype
+                                        return tag.getPrototype(1)
+                                    else
+   86   0.004905   0.001238             return printf(a:fmt, tag.str(longsig, fullpath))
+                                    endif
+                                else
+  129              0.000323         return a:default
+                                endif
+
+FUNCTION  <SNR>72_ClearCache()
+Called 52 times
+Total time:   0.000837
+ Self time:   0.000837
+
+count  total (s)   self (s)
+   52              0.000275     let b:syntastic_loclist = []
+   52              0.000224     unlet! b:syntastic_errors
+   52              0.000124     unlet! b:syntastic_warnings
+
+FUNCTION  eclim#display#signs#QuickFixCmdPost()
+Called 52 times
+Total time:   0.548254
+ Self time:   0.466873
+
+count  total (s)   self (s)
+   52              0.001283   if expand('<amatch>') == 'make'
+                                let newentries = []
+                                for entry in getqflist()
+                                  if entry['type'] == ''
+                                    let entry['type'] = 'e'
+                                  endif
+                                  call add(newentries, entry)
+                                endfor
+                                call setqflist(newentries, 'r')
+                              endif
+   52   0.082076   0.000695   call eclim#display#signs#Update()
+   52              0.462505   redraw!
+
+FUNCTION  <SNR>77_sub()
+Called 215 times
+Total time:   0.006619
+ Self time:   0.006619
+
+count  total (s)   self (s)
+  215              0.006216   return substitute(a:str,'\v\C'.a:pat,a:rep,'')
+
+FUNCTION  <SNR>99_SetUpCompleteopt()
+Called 2 times
+Total time:   0.000182
+ Self time:   0.000182
+
+count  total (s)   self (s)
+                              " Some plugins (I'm looking at you, vim-notes) change completeopt by for
+                              " instance adding 'longest'. This breaks YCM. So we force our settings.
+                              " There's no two ways about this: if you want to use YCM then you have to
+                              " have these completeopt settings, otherwise YCM won't work at all.
+                            
+                              " We need menuone in completeopt, otherwise when there's only one candidate
+                              " for completion, the menu doesn't show up.
+    2              0.000040   set completeopt-=menu
+    2              0.000018   set completeopt+=menuone
+                            
+                              " This is unnecessary with our features. People use this option to insert
+                              " the common prefix of all the matches and then add more differentiating chars
+                              " so that they can select a more specific match. With our features, they
+                              " don't need to insert the prefix; they just type the differentiating chars.
+                              " Also, having this option set breaks the plugin.
+    2              0.000016   set completeopt-=longest
+                            
+    2              0.000016   if g:ycm_add_preview_to_completeopt
+    2              0.000016     set completeopt+=preview
+    2              0.000006   endif
+
+FUNCTION  fugitive#statusline()
+Called 215 times
+Total time:   0.119056
+ Self time:   0.016160
+
+count  total (s)   self (s)
+  215              0.001507   if !exists('b:git_dir')
+                                return ''
+                              endif
+  215              0.000678   let status = ''
+  215   0.038697   0.003731   if s:buffer().commit() != ''
+                                let status .= ':' . s:buffer().commit()[0:7]
+                              endif
+  215   0.070817   0.002887   let status .= '('.fugitive#head(7).')'
+  215              0.001920   if &statusline =~# '%[MRHWY]' && &statusline !~# '%[mrhwy]'
+                                return ',GIT'.status
+                              else
+  215              0.000804     return '[Git'.status.']'
+                              endif
+
+FUNCTION  <SNR>72_AutoToggleLocList()
+Called 52 times
+Total time:   0.003496
+ Self time:   0.001957
+
+count  total (s)   self (s)
+   52   0.002050   0.000511     if s:BufHasErrorsOrWarningsToDisplay()
+                                    if g:syntastic_auto_loc_list == 1
+                                        call s:ShowLocList()
+                                    endif
+                                else
+   52              0.000211         if g:syntastic_auto_loc_list > 0
+                            
+                                        "TODO: this will close the loc list window if one was opened by
+                                        "something other than syntastic
+   52              0.000136             lclose
+   52              0.000071         endif
+   52              0.000077     endif
+
+FUNCTION  <SNR>72_LocList()
+Called 627 times
+Total time:   0.010606
+ Self time:   0.010606
+
+count  total (s)   self (s)
+  627              0.004176     if !exists("b:syntastic_loclist")
+                                    let b:syntastic_loclist = []
+                                endif
+  627              0.002178     return b:syntastic_loclist
+
+FUNCTION  <SNR>106_Init()
+Called 215 times
+Total time:   0.011962
+ Self time:   0.011962
+
+count  total (s)   self (s)
+  215              0.000851     if s:checked_ctags == 2 && a:silent
+                                    return 0
+                                elseif s:checked_ctags != 1
+                                    if !s:CheckForExCtags(a:silent)
+                                        return 0
+                                    endif
+                                endif
+                            
+  215              0.000652     if !s:checked_ctags_types
+                                    call s:GetSupportedFiletypes()
+                                endif
+                            
+  215              0.000538     if !s:type_init_done
+                                    call s:InitTypes()
+                                endif
+                            
+  215              0.000555     if !s:autocommands_done
+                                    call s:CreateAutocommands()
+                                    call s:AutoUpdate(fnamemodify(expand('%'), ':p'), 0)
+                                endif
+                            
+  215              0.000339     return 1
+
+FUNCTION  <SNR>72_BufHasErrorsOrWarningsToDisplay()
+Called 371 times
+Total time:   0.010728
+ Self time:   0.004549
+
+count  total (s)   self (s)
+  371   0.009307   0.003128     if empty(s:LocList())
+  371              0.000731         return 0
+                                endif
+                                return len(s:Errors()) || !g:syntastic_quiet_warnings
+
+FUNCTION  SyntasticCheckable()
+Called 52 times
+Total time:   0.000895
+ Self time:   0.000895
+
+count  total (s)   self (s)
+                                "users can just define a syntax checking function and it will override the
+                                "syntastic default
+   52              0.000535     if exists("*SyntaxCheckers_". a:ft ."_GetLocList")
+   52              0.000113         return 1
+                                endif
+                            
+                                if !exists("g:loaded_" . a:ft . "_syntax_checker")
+                                    exec "runtime syntax_checkers/" . a:ft . ".vim"
+                                    let {"g:loaded_" . a:ft . "_syntax_checker"} = 1
+                                endif
+                            
+                                return exists("*SyntaxCheckers_". a:ft ."_GetLocList")
+
+FUNCTION  <SNR>72_EchoCurrentError()
+Called 50 times
+Total time:   0.009851
+ Self time:   0.003510
+
+count  total (s)   self (s)
+                                "If we have an error or warning at the current line, show it
+   50   0.004236   0.000816     let errors = s:FilterLocList({'lnum': line("."), "type": 'e'})
+   50   0.003579   0.000658     let warnings = s:FilterLocList({'lnum': line("."), "type": 'w'})
+                            
+   50              0.000414     let b:syntastic_echoing_error = len(errors) || len(warnings)
+   50              0.000141     if len(errors)
+                                    return s:WideMsg(errors[0]['text'])
+                                endif
+   50              0.000140     if len(warnings)
+                                    return s:WideMsg(warnings[0]['text'])
+                                endif
+                            
+                                "Otherwise, clear the status line
+   50              0.000146     if b:syntastic_echoing_error
+                                    echo
+                                    let b:syntastic_echoing_error = 0
+                                endif
+
+FUNCTION  <SNR>99_OnCursorMovedNormalMode()
+Called 50 times
+Total time:   2.703731
+ Self time:   0.001330
+
+count  total (s)   self (s)
+   50   0.002238   0.000424   if !s:AllowedToCompleteInCurrentFile()
+                                return
+                              endif
+                            
+   50   2.701206   0.000619   call s:UpdateDiagnosticNotifications()
+
+FUNCTION  <SNR>72_SignErrors()
+Called 52 times
+Total time:   0.005808
+ Self time:   0.004224
+
+count  total (s)   self (s)
+   52   0.002052   0.000468     if s:BufHasErrorsOrWarningsToDisplay()
+                            
+                                    let errors = s:FilterLocList({'bufnr': bufnr('')})
+                                    for i in errors
+                                        let sign_severity = 'Error'
+                                        let sign_subtype = ''
+                                        if has_key(i,'subtype')
+                                            let sign_subtype = i['subtype']
+                                        endif
+                                        if i['type'] ==? 'w'
+                                            let sign_severity = 'Warning'
+                                        endif
+                                        let sign_type = 'Syntastic' . sign_subtype . sign_severity
+                            
+                                        if !s:WarningMasksError(i, errors)
+                                            exec "sign place ". s:next_sign_id ." line=". i['lnum'] ." name=". sign_type ." file=". expand("%:p")
+                                            call add(s:BufSignIds(), s:next_sign_id)
+                                            let s:next_sign_id += 1
+                                        endif
+                                    endfor
+                                endif
+
+FUNCTION  <SNR>77_buffer_getvar()
+Called 215 times
+Total time:   0.002052
+ Self time:   0.002052
+
+count  total (s)   self (s)
+  215              0.001714   return getbufvar(self['#'],a:var)
+
+FUNCTION  <SNR>99_OnFileReadyToParse()
+Called 2 times
+Total time:   0.001631
+ Self time:   0.001631
+
+count  total (s)   self (s)
+    2              0.001626   py ycm_state.OnFileReadyToParse()
+
+FUNCTION  Powerline#Functions#GetFilepath()
+Called 215 times
+Total time:   0.008990
+ Self time:   0.008990
+
+count  total (s)   self (s)
+                            	" Recalculate the filepath when cwd changes.
+  215              0.001695 	let cwd = getcwd()
+  215              0.001949 	if exists("b:Powerline_cwd") && cwd != b:Powerline_cwd
+                            		unlet! b:Powerline_filepath
+                            	endif
+  215              0.000877 	let b:Powerline_cwd = cwd
+                            
+  215              0.001197 	if exists('b:Powerline_filepath')
+  215              0.000700 		return b:Powerline_filepath
+                            	endif
+                            
+                            	let dirsep = has('win32') && ! &shellslash ? '\' : '/'
+                            	let filepath = expand('%:p')
+                            
+                            	if empty(filepath)
+                            		return ''
+                            	endif
+                            
+                            	let ret = ''
+                            
+                            	if g:Powerline_stl_path_style == 'short'
+                            		" Display a short path where the first directory is displayed with its
+                            		" full name, and the subsequent directories are shortened to their
+                            		" first letter, i.e. "/home/user/foo/foo/bar/baz.vim" becomes
+                            		" "~/foo/f/b/baz.vim"
+                            		"
+                            		" This displays the shortest possible path, relative to ~ or the
+                            		" current directory.
+                            		let mod = (exists('+acd') && &acd) ? ':~:h' : ':~:.:h'
+                            		let fpath = split(fnamemodify(filepath, mod), dirsep)
+                            		let fpath_shortparts = map(fpath[1:], 'v:val[0]')
+                            		let ret = join(extend([fpath[0]], fpath_shortparts), dirsep) . dirsep
+                            	elseif g:Powerline_stl_path_style == 'relative'
+                            		" Display a relative path, similar to the %f statusline item
+                            		let ret = fnamemodify(filepath, ':~:.:h') . dirsep
+                            	elseif g:Powerline_stl_path_style == 'full'
+                            		" Display the full path, similar to the %F statusline item
+                            		let ret = fnamemodify(filepath, ':h') . dirsep
+                            	endif
+                            
+                            	if ret == ('.' . dirsep)
+                            		let ret = ''
+                            	endif
+                            
+                            	let b:Powerline_filepath = ret
+                            	return ret
+
+FUNCTION  UltiSnips_CursorMoved()
+Called 50 times
+Total time:   0.018407
+ Self time:   0.018407
+
+count  total (s)   self (s)
+   50              0.018266     exec g:_uspy "UltiSnips_Manager.cursor_moved()"
+
+FUNCTION  <SNR>88_Highlight_Matching_Pair()
+Called 50 times
+Total time:   0.006663
+ Self time:   0.006663
+
+count  total (s)   self (s)
+                              " Remove any previous match.
+   50              0.000332   if exists('w:paren_hl_on') && w:paren_hl_on
+    2              0.000009     3match none
+    2              0.000006     let w:paren_hl_on = 0
+    2              0.000002   endif
+                            
+                              " Avoid that we remove the popup menu.
+                              " Return when there are no colors (looks like the cursor jumps).
+   50              0.000333   if pumvisible() || (&t_Co < 8 && !has("gui_running"))
+                                return
+                              endif
+                            
+                              " Get the character under the cursor and check if it's in 'matchpairs'.
+   50              0.000228   let c_lnum = line('.')
+   50              0.000216   let c_col = col('.')
+   50              0.000130   let before = 0
+                            
+   50              0.000410   let c = getline(c_lnum)[c_col - 1]
+   50              0.000956   let plist = split(&matchpairs, '.\zs[:,]')
+   50              0.000305   let i = index(plist, c)
+   50              0.000113   if i < 0
+                                " not found, in Insert mode try character before the cursor
+   48              0.000219     if c_col > 1 && (mode() == 'i' || mode() == 'R')
+                                  let before = 1
+                                  let c = getline(c_lnum)[c_col - 2]
+                                  let i = index(plist, c)
+                                endif
+   48              0.000088     if i < 0
+                                  " not found, nothing to do
+   48              0.000078       return
+                                endif
+                              endif
+                            
+                              " Figure out the arguments for searchpairpos().
+    2              0.000004   if i % 2 == 0
+    2              0.000005     let s_flags = 'nW'
+    2              0.000009     let c2 = plist[i + 1]
+    2              0.000002   else
+                                let s_flags = 'nbW'
+                                let c2 = c
+                                let c = plist[i - 1]
+                              endif
+    2              0.000005   if c == '['
+                                let c = '\['
+                                let c2 = '\]'
+                              endif
+                            
+                              " Find the match.  When it was just before the cursor move it there for a
+                              " moment.
+    2              0.000004   if before > 0
+                                let save_cursor = winsaveview()
+                                call cursor(c_lnum, c_col - before)
+                              endif
+                            
+                              " When not in a string or comment ignore matches inside them.
+                              " We match "escape" for special items, such as lispEscapeSpecial.
+    2              0.000016   let s_skip ='synIDattr(synID(line("."), col("."), 0), "name") ' . '=~?  "string\\|character\\|singlequote\\|escape\\|comment"'
+    2              0.000150   execute 'if' s_skip '| let s_skip = 0 | endif'
+                            
+                              " Limit the search to lines visible in the window.
+    2              0.000010   let stoplinebottom = line('w$')
+    2              0.000010   let stoplinetop = line('w0')
+    2              0.000005   if i % 2 == 0
+    2              0.000006     let stopline = stoplinebottom
+    2              0.000003   else
+                                let stopline = stoplinetop
+                              endif
+                            
+    2              0.000004   try
+                                " Limit the search time to 300 msec to avoid a hang on very long lines.
+                                " This fails when a timeout is not supported.
+    2              0.000633     let [m_lnum, m_col] = searchpairpos(c, '', c2, s_flags, s_skip, stopline, 300)
+    2              0.000005   catch /E118/
+                                " Can't use the timeout, restrict the stopline a bit more to avoid taking
+                                " a long time on closed folds and long lines.
+                                " The "viewable" variables give a range in which we can scroll while
+                                " keeping the cursor at the same position.
+                                " adjustedScrolloff accounts for very large numbers of scrolloff.
+                                let adjustedScrolloff = min([&scrolloff, (line('w$') - line('w0')) / 2])
+                                let bottom_viewable = min([line('$'), c_lnum + &lines - adjustedScrolloff - 2])
+                                let top_viewable = max([1, c_lnum-&lines+adjustedScrolloff + 2])
+                                " one of these stoplines will be adjusted below, but the current values are
+                                " minimal boundaries within the current window
+                                if i % 2 == 0
+                                  if has("byte_offset") && has("syntax_items") && &smc > 0
+                            	let stopbyte = min([line2byte("$"), line2byte(".") + col(".") + &smc * 2])
+                            	let stopline = min([bottom_viewable, byte2line(stopbyte)])
+                                  else
+                            	let stopline = min([bottom_viewable, c_lnum + 100])
+                                  endif
+                                  let stoplinebottom = stopline
+                                else
+                                  if has("byte_offset") && has("syntax_items") && &smc > 0
+                            	let stopbyte = max([1, line2byte(".") + col(".") - &smc * 2])
+                            	let stopline = max([top_viewable, byte2line(stopbyte)])
+                                  else
+                            	let stopline = max([top_viewable, c_lnum - 100])
+                                  endif
+                                  let stoplinetop = stopline
+                                endif
+                                let [m_lnum, m_col] = searchpairpos(c, '', c2, s_flags, s_skip, stopline)
+                              endtry
+                            
+    2              0.000004   if before > 0
+                                call winrestview(save_cursor)
+                              endif
+                            
+                              " If a match is found setup match highlighting.
+    2              0.000010   if m_lnum > 0 && m_lnum >= stoplinetop && m_lnum <= stoplinebottom 
+    2              0.000089     exe '3match MatchParen /\(\%' . c_lnum . 'l\%' . (c_col - before) . 'c\)\|\(\%' . m_lnum . 'l\%' . m_col . 'c\)/'
+    2              0.000006     let w:paren_hl_on = 1
+    2              0.000002   endif
+
+FUNCTION  syntastic#c#ReadConfig()
+Called 52 times
+Total time:   0.010362
+ Self time:   0.010362
+
+count  total (s)   self (s)
+                                " search in the current file's directory upwards
+   52              0.009774     let config = findfile(a:file, '.;')
+   52              0.000385     if config == '' || !filereadable(config) | return '' | endif
+                            
+                                " convert filename into absolute path
+                                let filepath = substitute(fnamemodify(config, ':p:h'), '\', '/', 'g')
+                            
+                                " try to read config file
+                                try
+                                    let lines = map(readfile(config), 'substitute(v:val, ''\'', ''/'', ''g'')')
+                                catch /E484/
+                                    return ''
+                                endtry
+                            
+                                let parameters = []
+                                for line in lines
+                                    let matches = matchlist(line, '^\s*-I\s*\(\S\+\)')
+                                    if matches != [] && matches[1] != ''
+                                        " this one looks like an absolute path
+                                        if match(matches[1], '^\%(/\|\a:\)') != -1
+                                            call add(parameters, '-I' . matches[1])
+                                        else
+                                            call add(parameters, '-I' . filepath . '/' . matches[1])
+                                        endif
+                                    else
+                                        call add(parameters, line)
+                                    endif
+                                endfor
+                            
+                                return join(parameters, ' ')
+
+FUNCTION  SyntasticMake()
+Called 52 times
+Total time:   2.386617
+ Self time:   0.031475
+
+count  total (s)   self (s)
+   52              0.000386     let old_loclist = getloclist(0)
+   52              0.000203     let old_makeprg = &l:makeprg
+   52              0.000216     let old_shellpipe = &shellpipe
+   52              0.000186     let old_shell = &shell
+   52              0.000227     let old_errorformat = &l:errorformat
+                            
+   52   0.003170   0.000439     if s:OSSupportsShellpipeHack()
+                                    "this is a hack to stop the screen needing to be ':redraw'n when
+                                    "when :lmake is run. Otherwise the screen flickers annoyingly
+   52              0.000328         let &shellpipe='&>'
+   52              0.000177         let &shell = '/bin/bash'
+   52              0.000100     endif
+                            
+   52              0.000272     if has_key(a:options, 'makeprg')
+   52              0.000311         let &l:makeprg = a:options['makeprg']
+   52              0.000079     endif
+                            
+   52              0.000243     if has_key(a:options, 'errorformat')
+   52              0.000319         let &l:errorformat = a:options['errorformat']
+   52              0.000069     endif
+                            
+   52   2.369480   0.021118     silent lmake!
+   52              0.000582     let errors = getloclist(0)
+                            
+   52              0.000623     call setloclist(0, old_loclist)
+   52              0.000459     let &l:makeprg = old_makeprg
+   52              0.000325     let &l:errorformat = old_errorformat
+   52              0.000426     let &shellpipe=old_shellpipe
+   52              0.000257     let &shell=old_shell
+                            
+   52   0.004850   0.000801     if s:IsRedrawRequiredAfterMake()
+                                    redraw!
+                                endif
+                            
+   52              0.000350     if has_key(a:options, 'defaults')
+                                    call SyntasticAddToErrors(errors, a:options['defaults'])
+                                endif
+                            
+                                " Add subtype info if present.
+   52              0.000298     if has_key(a:options, 'subtype')
+                                    call SyntasticAddToErrors(errors, {'subtype': a:options['subtype']})
+                                endif
+                            
+   52              0.000152     return errors
+
+FUNCTION  <SNR>72_RefreshBalloons()
+Called 52 times
+Total time:   0.003463
+ Self time:   0.001861
+
+count  total (s)   self (s)
+   52              0.000309     let b:syntastic_balloons = {}
+   52   0.002084   0.000482     if s:BufHasErrorsOrWarningsToDisplay()
+                                    for i in s:LocList()
+                                        let b:syntastic_balloons[i['lnum']] = i['text']
+                                    endfor
+                                    set beval bexpr=SyntasticErrorBalloonExpr()
+                                endif
+
+FUNCTION  <SNR>106_GetNearbyTag()
+Called 217 times
+Total time:   0.057883
+ Self time:   0.054142
+
+count  total (s)   self (s)
+  217   0.003004   0.002017     let fileinfo = s:known_files.getCurrent()
+  217              0.000751     if empty(fileinfo)
+                                    return {}
+                                endif
+                            
+  217              0.001004     let typeinfo = fileinfo.typeinfo
+  217              0.000487     if a:0 > 0
+                                    let curline = a:1
+                                else
+  217              0.001066         let curline = line('.')
+  217              0.000301     endif
+  217              0.000670     let tag = {}
+                            
+                                " If a tag appears in a file more than once (for example namespaces in
+                                " C++) only one of them has a 'tline' entry and can thus be highlighted.
+                                " The only way to solve this would be to go over the whole tag list again,
+                                " making everything slower. Since this should be a rare occurence and
+                                " highlighting isn't /that/ important ignore it for now.
+ 1738              0.004746     for line in range(curline, 1, -1)
+ 1609              0.007786         if has_key(fileinfo.fline, line)
+  248              0.001436             let curtag = fileinfo.fline[line]
+  248   0.005320   0.002566             if a:all || typeinfo.getKind(curtag.fields.kind).stl
+   88              0.000282                 let tag = curtag
+   88              0.000160                 break
+                                        endif
+  160              0.000175         endif
+ 1521              0.001978     endfor
+                            
+  217              0.000438     return tag
+
+FUNCTION  eclim#util#ShowCurrentError()
+Called 50 times
+Total time:   0.008917
+ Self time:   0.003318
+
+count  total (s)   self (s)
+   50              0.000511   if mode() != 'n' || expand('%') == ''
+                                return
+                              endif
+                            
+   50   0.006270   0.000671   let message = eclim#util#GetLineError(line('.'))
+   50              0.000132   if message != ''
+                                " remove any new lines
+                                let message = substitute(message, '\n', ' ', 'g')
+                                " convert tabs to spaces to ensure a consistent char to display length
+                                let message = substitute(message, '\t', '  ', 'g')
+                            
+                                call eclim#util#WideMessage('echo', message)
+                                let s:show_current_error_displaying = 1
+                              else
+                                " clear the message if one of our error messages was displaying
+   50              0.000199     if s:show_current_error_displaying
+                                  call eclim#util#WideMessage('echo', message)
+                                  let s:show_current_error_displaying = 0
+                                endif
+   50              0.000057   endif
+
+FUNCTION  eclim#display#signs#SetPlaceholder()
+Called 52 times
+Total time:   0.023942
+ Self time:   0.006190
+
+count  total (s)   self (s)
+   52              0.000574   if !has('signs') || !g:EclimSignLevel
+                                return
+                              endif
+                            
+   52              0.000489   if len(a:000) > 0 && a:000[0]
+                                let existing = eclim#display#signs#GetExisting()
+                                if !len(existing)
+                                  return
+                                endif
+                              endif
+                            
+   52   0.003686   0.001004   call eclim#display#signs#Define('placeholder', '_ ', g:EclimInfoHighlight)
+   52   0.009508   0.001176   let existing = eclim#display#signs#GetExisting('placeholder')
+   52   0.007524   0.000786   if len(existing) == 0 && eclim#display#signs#HasExisting()
+                                call eclim#display#signs#Place('placeholder', 1)
+                                return 1
+                              endif
+   52              0.000090   return
+
+FUNCTION  <SNR>77_shellslash()
+Called 215 times
+Total time:   0.003806
+ Self time:   0.003806
+
+count  total (s)   self (s)
+  215              0.001402   if exists('+shellslash') && !&shellslash
+                                return s:gsub(a:path,'\\','/')
+                              else
+  215              0.000542     return a:path
+                              endif
+
+FUNCTION  <SNR>77_repo_dir()
+Called 215 times
+Total time:   0.002848
+ Self time:   0.002848
+
+count  total (s)   self (s)
+  215              0.002451   return join([self.git_dir]+a:000,'/')
+
+FUNCTION  <SNR>106_HighlightTag()
+Called 2 times
+Total time:   0.000641
+ Self time:   0.000118
+
+count  total (s)   self (s)
+    2              0.000009     let tagline = 0
+                            
+    2              0.000010     let force = a:0 > 0 ? a:1 : 0
+                            
+    2              0.000006     if a:0 > 1
+                                    let tag = s:GetNearbyTag(1, a:2)
+                                else
+    2   0.000543   0.000020         let tag = s:GetNearbyTag(1)
+    2              0.000002     endif
+    2              0.000006     if !empty(tag)
+    2              0.000007         let tagline = tag.tline
+    2              0.000003     endif
+                            
+                                " Don't highlight the tag again if it's the same one as last time.
+                                " This prevents the Tagbar window from jumping back after scrolling with
+                                " the mouse.
+    2              0.000010     if !force && tagline == s:last_highlight_tline
+    2              0.000004         return
+                                else
+                                    let s:last_highlight_tline = tagline
+                                endif
+                            
+                                let tagbarwinnr = bufwinnr('__Tagbar__')
+                                if tagbarwinnr == -1
+                                    return
+                                endif
+                                let prevwinnr = winnr()
+                                call s:winexec(tagbarwinnr . 'wincmd w')
+                            
+                                match none
+                            
+                                " No tag above cursor position so don't do anything
+                                if tagline == 0
+                                    call s:winexec(prevwinnr . 'wincmd w')
+                                    redraw
+                                    return
+                                endif
+                            
+                                if g:tagbar_autoshowtag || a:openfolds
+                                    call s:OpenParents(tag)
+                                endif
+                            
+                                " Check whether the tag is inside a closed fold and highlight the parent
+                                " instead in that case
+                                let tagline = tag.getClosedParentTline()
+                            
+                                " Go to the line containing the tag
+                                execute tagline
+                            
+                                " Make sure the tag is visible in the window
+                                call winline()
+                            
+                                let foldpat = '[' . s:icon_open . s:icon_closed . ' ]'
+                                let pattern = '/^\%' . tagline . 'l\s*' . foldpat . '[-+# ]\zs[^( ]\+\ze/'
+                                call s:LogDebugMessage("Highlight pattern: '" . pattern . "'")
+                                execute 'match TagbarHighlight ' . pattern
+                            
+                                if a:0 <= 1 " no line explicitly given, so assume we were in the file window
+                                    call s:winexec(prevwinnr . 'wincmd w')
+                                endif
+                            
+                                redraw
+
+FUNCTION  <SNR>99_UpdateDiagnosticNotifications()
+Called 52 times
+Total time:   2.827272
+ Self time:   0.349753
+
+count  total (s)   self (s)
+   52              0.008796   if get( g:, 'loaded_syntastic_plugin', 0 ) && pyeval( 'ycm_state.NativeFiletypeCompletionUsable()' ) && pyeval( 'ycm_state.DiagnosticsForCurrentFileReady()' )
+   52   2.818155   0.340636     SyntasticCheck
+   52              0.000113   endif
+
+FUNCTION  SyntasticStatuslineFlag()
+Called 215 times
+Total time:   0.025814
+ Self time:   0.019811
+
+count  total (s)   self (s)
+  215   0.007837   0.001834     if s:BufHasErrorsOrWarningsToDisplay()
+                                    let errors = s:Errors()
+                                    let warnings = s:Warnings()
+                            
+                                    let num_errors = len(errors)
+                                    let num_warnings = len(warnings)
+                            
+                                    let output = g:syntastic_stl_format
+                            
+                                    "hide stuff wrapped in %E(...) unless there are errors
+                                    let output = substitute(output, '\C%E{\([^}]*\)}', num_errors ? '\1' : '' , 'g')
+                            
+                                    "hide stuff wrapped in %W(...) unless there are warnings
+                                    let output = substitute(output, '\C%W{\([^}]*\)}', num_warnings ? '\1' : '' , 'g')
+                            
+                                    "hide stuff wrapped in %B(...) unless there are both errors and warnings
+                                    let output = substitute(output, '\C%B{\([^}]*\)}', (num_warnings && num_errors) ? '\1' : '' , 'g')
+                            
+                                    "sub in the total errors/warnings/both
+                                    let output = substitute(output, '\C%w', num_warnings, 'g')
+                                    let output = substitute(output, '\C%e', num_errors, 'g')
+                                    let output = substitute(output, '\C%t', len(s:LocList()), 'g')
+                            
+                                    "first error/warning line num
+                                    let output = substitute(output, '\C%F', s:LocList()[0]['lnum'], 'g')
+                            
+                                    "first error line num
+                                    let output = substitute(output, '\C%fe', num_errors ? errors[0]['lnum'] : '', 'g')
+                            
+                                    "first warning line num
+                                    let output = substitute(output, '\C%fw', num_warnings ? warnings[0]['lnum'] : '', 'g')
+                            
+                                    return output
+                                else
+  215              0.000362         return ''
+                                endif
+
+FUNCTION  syntastic#c#GetIncludeDirs()
+Called 52 times
+Total time:   0.011889
+ Self time:   0.005202
+
+count  total (s)   self (s)
+   52              0.000201     let include_dirs = []
+                            
+   52              0.000584     if !exists('g:syntastic_'.a:filetype.'_no_default_include_dirs') || !g:syntastic_{a:filetype}_no_default_include_dirs
+   52              0.000562         let include_dirs = copy(s:default_includes)
+   52              0.000076     endif
+                            
+   52              0.000390     if exists('g:syntastic_'.a:filetype.'_include_dirs')
+                                    call extend(include_dirs, g:syntastic_{a:filetype}_include_dirs)
+                                endif
+                            
+   52   0.009362   0.002675     return join(map(s:Unique(include_dirs), '"-I" . v:val'), ' ')
+
+FUNCTION  <SNR>72_UpdateErrors()
+Called 52 times
+Total time:   2.477519
+ Self time:   0.007003
+
+count  total (s)   self (s)
+   52              0.000270     if !empty(&buftype)
+                                    return
+                                endif
+                            
+   52              0.000371     if !a:auto_invoked || s:ModeMapAllowsAutoChecking()
+   52   2.441830   0.000720         call s:CacheErrors()
+   52              0.000091     end
+                            
+   52   0.001709   0.000748     call setloclist(0, s:LocList())
+                            
+   52              0.000215     if g:syntastic_enable_balloons
+   52   0.003963   0.000500         call s:RefreshBalloons()
+   52              0.000075     endif
+                            
+   52              0.000187     if g:syntastic_enable_signs
+   52   0.010554   0.000511         call s:RefreshSigns()
+   52              0.000086     endif
+                            
+   52              0.000196     if g:syntastic_enable_highlighting
+   52   0.011937   0.000494         call s:HighlightErrors()
+   52              0.000082     endif
+                            
+   52              0.000427     if g:syntastic_auto_jump && s:BufHasErrorsOrWarningsToDisplay()
+                                    silent! ll
+                                endif
+                            
+   52   0.004114   0.000618     call s:AutoToggleLocList()
+
+FUNCTION  <SNR>77_buffer()
+Called 215 times
+Total time:   0.015397
+ Self time:   0.013345
+
+count  total (s)   self (s)
+  215              0.002225   let buffer = {'#': bufnr(a:0 ? a:1 : '%')}
+  215              0.007251   call extend(extend(buffer,s:buffer_prototype,'keep'),s:abstract_prototype,'keep')
+  215   0.004384   0.002332   if buffer.getvar('git_dir') !=# ''
+  215              0.000526     return buffer
+                              endif
+                              call s:throw('not a git repository: '.expand('%:p'))
+
+FUNCTION  Powerline#Functions#syntastic#GetErrors()
+Called 215 times
+Total time:   0.036715
+ Self time:   0.010901
+
+count  total (s)   self (s)
+  215              0.001378 	if ! exists('g:syntastic_stl_format')
+                            		" Syntastic hasn't been loaded yet
+                            		return ''
+                            	endif
+                            
+                            	" Temporarily change syntastic output format
+  215              0.001081 	let old_stl_format = g:syntastic_stl_format
+  215              0.002531 	let g:syntastic_stl_format = '%E{ ERRORS (%e) '. a:line_symbol .' %fe }%W{ WARNINGS (%w) '. a:line_symbol .' %fw }'
+                            
+  215   0.027557   0.001743 	let ret = SyntasticStatuslineFlag()
+                            
+  215              0.001015 	let g:syntastic_stl_format = old_stl_format
+                            
+  215              0.000452 	return ret
+
+FUNCTION  <SNR>99_AllowedToCompleteInCurrentFile()
+Called 52 times
+Total time:   0.002004
+ Self time:   0.002004
+
+count  total (s)   self (s)
+   52              0.000232   if empty( &filetype )
+                                return 0
+                              endif
+                            
+   52              0.000584   let whitelist_allows = has_key( g:ycm_filetype_whitelist, '*' ) || has_key( g:ycm_filetype_whitelist, &filetype )
+   52              0.000530   let blacklist_allows = !has_key( g:ycm_filetype_blacklist, &filetype )
+                            
+   52              0.000210   return whitelist_allows && blacklist_allows
+
+FUNCTION  eclim#util#GetLineError()
+Called 50 times
+Total time:   0.005599
+ Self time:   0.005599
+
+count  total (s)   self (s)
+   50              0.000235   let line = line('.')
+   50              0.000223   let col = col('.')
+                            
+   50              0.000153   let errornum = 0
+   50              0.000145   let errorcol = 0
+   50              0.000132   let index = 0
+                            
+   50              0.000302   let locerrors = getloclist(0)
+   50              0.000230   let qferrors = getqflist()
+   50              0.000246   let bufname = expand('%')
+   50              0.000217   let lastline = line('$')
+   50              0.000263   for error in qferrors + locerrors
+                                let index += 1
+                                if bufname(error.bufnr) == bufname && (error.lnum == line || (error.lnum > lastline && line == lastline))
+                                  if errornum == 0 || (col >= error.col && error.col != errorcol)
+                                    let errornum = index
+                                    let errorcol = error.col
+                                  endif
+                                endif
+                              endfor
+                            
+   50              0.000117   if errornum > 0
+                                let src = 'qf'
+                                let cnt = len(qferrors)
+                                let errors = qferrors
+                                if errornum > cnt
+                                  let errornum -= cnt
+                                  let src = 'loc'
+                                  let cnt = len(locerrors)
+                                  let errors = locerrors
+                                endif
+                            
+                                let message = src . ' - (' . errornum . ' of ' . cnt . '): ' . substitute(errors[errornum - 1].text, '^\s\+', '', '')
+                                return message
+                              endif
+   50              0.000091   return ''
+
+FUNCTION  Powerline#Functions#GetMode()
+Called 215 times
+Total time:   0.017638
+ Self time:   0.017638
+
+count  total (s)   self (s)
+  215              0.001177 	let mode = mode()
+                            
+  215              0.000655 	if mode ==# 'v'
+                            		let mode = get(g:, "Powerline_mode_v", "VISUAL")
+                            	elseif mode ==# 'V'
+                            		let mode = get(g:, "Powerline_mode_V", "V⋅LINE")
+                            	elseif mode ==# ''
+                            		let mode = get(g:, "Powerline_mode_cv", "V⋅BLOCK")
+                            	elseif mode ==# 's'
+                            		let mode = get(g:, "Powerline_mode_s", "SELECT")
+                            	elseif mode ==# 'S'
+                            		let mode = get(g:, "Powerline_mode_S", "S⋅LINE")
+                            	elseif mode ==# ''
+                            		let mode = get(g:, "Powerline_mode_cs", "S⋅BLOCK")
+                            	elseif mode =~# '\vi'
+                            		let mode = get(g:, "Powerline_mode_i", "INSERT")
+                            	elseif mode =~# '\v(R|Rv)'
+                            		let mode = get(g:, "Powerline_mode_R", "REPLACE")
+                            	else
+                            		" Fallback to normal mode
+  215              0.001493 		let mode = get(g:, "Powerline_mode_n", "NORMAL")
+  215              0.000304 	endif
+                            
+  215              0.000509 	return mode
+
+FUNCTIONS SORTED ON TOTAL TIME
+count  total (s)   self (s)  function
+   52   2.827272   0.349753  <SNR>99_UpdateDiagnosticNotifications()
+   50   2.703731   0.001330  <SNR>99_OnCursorMovedNormalMode()
+   52   2.477519   0.007003  <SNR>72_UpdateErrors()
+   52   2.441110   0.011346  <SNR>72_CacheErrors()
+   52   2.421764   0.012896  SyntaxCheckers_c_GetLocList()
+   52   2.386617   0.031475  SyntasticMake()
+   52   0.548254   0.466873  eclim#display#signs#QuickFixCmdPost()
+  215   0.129427   0.010371  Powerline#Functions#fugitive#GetBranch()
+    2   0.128902   0.000214  <SNR>99_OnCursorHold()
+  215   0.119056   0.016160  fugitive#statusline()
+  215   0.089574   0.016585  tagbar#currenttag()
+   52   0.081381   0.032912  eclim#display#signs#Update()
+  215   0.067930   0.005780  fugitive#head()
+  217   0.057883   0.054142  <SNR>106_GetNearbyTag()
+  215   0.049797   0.012712  <SNR>77_repo_head()
+  215   0.036715   0.010901  Powerline#Functions#syntastic#GetErrors()
+  215   0.025814   0.019811  SyntasticStatuslineFlag()
+   52   0.023942   0.006190  eclim#display#signs#SetPlaceholder()
+  430   0.023393             <SNR>77_repo()
+  215   0.019569   0.005165  <SNR>77_buffer_commit()
+
+FUNCTIONS SORTED ON SELF TIME
+count  total (s)   self (s)  function
+   52   0.548254   0.466873  eclim#display#signs#QuickFixCmdPost()
+   52   2.827272   0.349753  <SNR>99_UpdateDiagnosticNotifications()
+  217   0.057883   0.054142  <SNR>106_GetNearbyTag()
+   52   0.081381   0.032912  eclim#display#signs#Update()
+   52   2.386617   0.031475  SyntasticMake()
+  430              0.023393  <SNR>77_repo()
+  215   0.025814   0.019811  SyntasticStatuslineFlag()
+   50              0.018407  UltiSnips_CursorMoved()
+  215              0.017892  Pl#Statusline()
+  215              0.017638  Powerline#Functions#GetMode()
+  215   0.089574   0.016585  tagbar#currenttag()
+  215   0.019426   0.016578  <SNR>77_repo_head_ref()
+  215   0.119056   0.016160  fugitive#statusline()
+  104              0.014231  eclim#display#signs#GetExisting()
+  215   0.015397   0.013345  <SNR>77_buffer()
+   52   2.421764   0.012896  SyntaxCheckers_c_GetLocList()
+  215   0.049797   0.012712  <SNR>77_repo_head()
+  215              0.011962  <SNR>106_Init()
+   52   2.441110   0.011346  <SNR>72_CacheErrors()
+  215   0.036715   0.010901  Powerline#Functions#syntastic#GetErrors()
+
