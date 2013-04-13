@@ -85,7 +85,7 @@ DIVERSEN		90) een bestand editen
 		echo 'Geef <RETURN> om verder te gaan' ; read answ
 		;;
 	4)
-		echo 'test'
+		echo 'test1'
 		;;
 	esac
 done
