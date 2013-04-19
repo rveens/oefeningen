@@ -24,7 +24,7 @@ int main()
 }
 
 /* getline: read a line into s, return length */
-int getline1(char s[], int lim)
+int getline1(char s[], int maxline)
 {
 	int c, i;
 

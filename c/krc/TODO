@@ -3,6 +3,7 @@ TODO
 	K&R C Exercises
 -----------------------------------------------------------------------------
 
+O pointers arrays: kunnen arrays aangepast worden met -- en ++? wat betekent *naam++;?
 O oef5-1.c nog eens goed nakijken
 X hoe werkt one's complement? 
 	(Most Significant Bit (MSB) (helemaal links) geeft aan of het getal 
@@ -30,7 +31,7 @@ X werkt char[MAXINPUT] test = "HOI"; ?
 	Programming languages			book
 -----------------------------------------------------------------------------
 1	c 					K&R C
-2	c++ 					Bjorne s.. ?
+2	c++ 					Bjorne s.. ? / deitel/deitel
 3	python					google code university ?
 
 -----------------------------------------------------------------------------

@@ -27,7 +27,6 @@ int main(int argc, const char *argv[])
 	/* atoi2 */
 	//printf("'%d'Appelflappenbakker\n", atoi2(s) + 10);
 	char s1[] = "12345";
-
 	printf("retval: %d\n", strindex(s, s1));
 
 	return 0;
@@ -121,6 +120,8 @@ int bufp = 0;
 int getch(void);
 void ungetch(int);
 
+#define 	NUMBER 		'0' /* signal that a number was found */
+
 int getch(void)
 {
 	return (bufp > 0) ? buf[--bufp] : getchar();
@@ -139,9 +140,23 @@ void ungetch(int c)
 int getop(char *s)
 {
 	int c;
+	char *p = s;
 
 	/* skip spaces and tabs */
 	while ( (*s = c = getch()) == ' ' || c == '\t' )
 		;
 	*++s = '\0';
+	if (!isdigit(c) && c != '.')
+		return c;
+	s = p;
+	if (isdigit(c)) /* collect integer part */
+		while (isdigit(*++s = c = getch()))
+			;
+	if (c == '.')	/* collect fraction part */
+		while (isdigit(*++s = c = getch()))
+			;
+	*s = '\0';
+	if (c != EOF)
+		ungetch(c);
+	return NUMBER;
 }
