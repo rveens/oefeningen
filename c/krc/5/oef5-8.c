@@ -8,8 +8,9 @@ int day_of_year(int year, int month, int day);
 void month_day(int year, int yearday, int *pmonth, int *day);
 
 #define TESTLIMIT 	1000
+#define DAYTAB_WIDTH	13
 
-static char daytab[2][13] = {
+static char daytab[2][DAYTAB_WIDTH] = {
 	{0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
 	{0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
 };
@@ -37,17 +38,21 @@ int day_of_year(int year, int month, int day)
 	int i, leap;
 
 	leap = year%4 == 0 && year%100 != 0 || year%400 == 0;
+	if (leap < 0 || leap > DAYTAB_WIDTH-1)
+		return;
 	for (i = 1; i < month; i++)
 		day += daytab[leap][i];
 	return day;
 }
 
-/* month_day: set month, day from day of year */
+/* DAYTAB_WIDTH month_day: set month, day from day of year */
 void month_day(int year, int yearday, int *pmonth, int *pday)
 {
 	int i, leap;
 
 	leap = year%4 == 0 && year%100 != 0 || year%400 == 0;
+	if (leap < 0 || leap > DAYTAB_WIDTH-1)
+		return;
 	for (i = 1; yearday > daytab[leap][i]; i++)
 		yearday -= daytab[leap][i];
 	*pmonth = i;
