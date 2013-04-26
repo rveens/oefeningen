@@ -1,14 +1,12 @@
-/*
- * Exercise 5.8. There is no error checking in day_of_year or month_day.
- * Remedy this defect.
- */
+/* Exercise 5-9. Rewrite the routines day_of_year and month_day with pointers 
+ * instead of indexing. */
+
 #include <stdio.h>
+
+#define DAYTAB_WIDTH	13
 
 int day_of_year(int year, int month, int day);
 void month_day(int year, int yearday, int *pmonth, int *day);
-
-#define TESTLIMIT 	100
-#define DAYTAB_WIDTH	13
 
 static char daytab[2][DAYTAB_WIDTH] = {
 	{0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
@@ -17,19 +15,7 @@ static char daytab[2][DAYTAB_WIDTH] = {
 
 int main(int argc, const char *argv[])
 {
-	int month, day, yearday;
-
-	int teller;
-
-	for (teller = 0; teller < TESTLIMIT; teller++) {
-		printf("--------------------------------------------------------------------------------\n");
-		printf("day_of_year (teller, teller, teller): %d\n", yearday = day_of_year(teller, teller, teller));
-		month_day(teller, yearday, &month, &day);
-		printf("month_day (teller, %d, month, day): month:%d day:%d\n", yearday, month, day);
-		printf("--------------------------------------------------------------------------------\n");
-	}
-	printf("day_of_year (teller, teller, teller): %d\n", yearday = day_of_year(1992, 10, 19));
-
+	
 	return 0;
 }
 
