@@ -3,6 +3,8 @@ TODO
 	K&R C Exercises
 -----------------------------------------------------------------------------
 
+O oef5-11.c opdracht beschrijving onduidelijk
+O oef5-12.c opdracht verder uitwerken (nu werkt alleen de parameters)
 O pointers arrays: kunnen arrays aangepast worden met -- en ++? wat betekent *naam++;?
 O oef5-1.c nog eens goed nakijken
 X hoe werkt one's complement? 
