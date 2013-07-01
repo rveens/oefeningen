@@ -15,48 +15,51 @@
 #define MAXLEN 1000
 #endif
 
-int getinput(char *line);
+int getinput(char s[]);
 int lastlines = 10; // default is 10, as ordered
 
 int main(int argc, char const *argv[])
 {
 	char **p;
 	char **pstart;
-	char *line = malloc(sizeof(char *) * MAXLEN);
+	int amountOfLines = 0;
+	char *line = malloc(sizeof(char) * MAXLEN);
 
 	/* read lastline var from command line parameter */
 	while (--argc > 0 && (*++argv)[0] == '-')
 		lastlines = (++*argv)[0] - '0';
+	p = pstart = malloc(sizeof(char *));
 	/* store the input */
 	while (getinput(line)) {
-		p = realloc(p, sizeof(char *) * ((p - pstart) + 1) );
-		*p = malloc(sizeof(char *) * MAXLEN);
-		strcpy(*p, line);
+		amountOfLines++;
+		pstart = realloc(pstart, sizeof(char *) * amountOfLines );
+		*p = malloc(sizeof(char) * MAXLEN);
+		strcpy(*p++, line);
 	}
+	printf("------------\n");
 	/* print last x lines */
 	char **e = p - lastlines;
-	while (*e) {
-		printf("%s", *e);
-		*e++;
-	}
+	while (e < p)
+		printf("%s", *e++);
 
+	char **t = pstart; // for cleaning up
 	/* free memory */
-	while (p > pstart)
-		free(*p--);
-	free(p);
+	while (t < p)
+		free(*t++);
+	free(pstart);
 
 	return 0;
 }
 
-int getinput(char *line)
+int getinput(char s[])
 {
-	char *s = line;
+	int i, c;
 
-	while ( (*line = getchar() != EOF) && *line != '\n' )
-		line++;
-	if (*line != '\n')
-		line--;
-	*line = '\0';
+	i = c = 0;
 
-	return line - s;
+	while( (s[i] = c = getchar()) != '\n' && c != EOF)
+		i++;
+	if(c == '\n')
+		s[++i] = '\0';
+	return i;
 }
