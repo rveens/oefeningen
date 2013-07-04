@@ -43,16 +43,6 @@ int main()
 	}
 }
 
-double now(void)
-{
-   struct timeval tv;
-   double retval=0;
-   gettimeofday(&tv, NULL);
-   retval=tv.tv_usec;
-   retval+= (double)tv.tv_usecs / 1000000.;
-   return retval;
-}
-
 /* readlines: read input lines */
 int readlines(char lijst[MAXLINES][MAXLEN], int maxlines)
 {
