@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 	int nlines;		/* number of input lines read */
 	int c;			/* temp char for arguments */
 
-	while (--argc > 0 && (c = (*++argv)[0]) == '-' || c == '+') {
+	while (--argc > 0 && ((c = (*++argv)[0]) == '-' || c == '+')) {
 		if (c == '-' && !isdigit(*(argv[0]+1)))
 			while (c = *++argv[0])
 				switch (c) {
@@ -114,9 +114,22 @@ int charcmp(char *s1, char *s2)
 	int fold = option & FOLDING;
 	int dir = option & DIRECTORY;
 	char a, b; 	// temp comparison chars
+	int startposcount = 0;
 
-	/* skip all the non letters, non numbers and non blanks if dir is turned on */
+	/* skip startpos characters */
+	while (*s1 && ++startposcount <= startpos)
+		s1++;
+	if (*s1 == '\0') // if we reach the end of the string, cancel
+		return 0;
+	/* again for s2 */
+	startposcount = 0;
+	while (*s2 && ++startposcount <= startpos)
+		s2++;
+	if (*s2 == '\0') // if we reach the end of the string, cancel
+		return 0;
+
 	do {
+		/* skip all the non letters, non numbers and non blanks if dir is turned on */
 		if (dir) {
 			while (!isalnum(*s1) && *s1 != ' ' && *s1 != '\0')
 				s1++;
@@ -130,6 +143,8 @@ int charcmp(char *s1, char *s2)
 		s2++;
 		if (a == b && a == '\0')
 			return 0;
+		if (++startposcount == endpos)
+			break;
 	} while (a == b);
 	return a - b;
 }
@@ -158,6 +173,16 @@ int numcmp(const void *p1, const void *p2)
 	char * const *s1 = p1;
 	char * const *s2 = p2;
 	double v1, v2;
+	int startposcount = 0;
+
+	while (*s1 && ++startposcount <= startpos)
+		s1++;
+	if (*s1 == '\0')
+		return 0;
+	while (*s2 && ++startposcount <= startpos)
+		s2++;
+	if (*s2 == '\0')
+		return 0;
 
 	v1 = atof(*s1);
 	v2 = atof(*s2);
