@@ -1,5 +1,5 @@
-/* Exercise 5.18. Make dc1 recover from input errors.
- * (invalid declarations, spurious blanks) */
+/* Exercise 5.19. Modify undc1 so that it does not add redundant parentheses to
+ * declarations. */
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -7,10 +7,7 @@
 #define MAXTOKEN 100
 
 enum { NAME, PARENS, BRACKETS };
-
-void dc1(void);
-void dirdc1(void);
-int checkdatatype(char *s);
+enum { NO, YES };
 
 int gettoken(void);
 int tokentype;			/* type of last token */
@@ -19,55 +16,45 @@ char name[MAXTOKEN];		/* identifier name */
 char datatype[MAXTOKEN];	/* data type = char, int , etc. */
 char out[1000];			/* output string */
 
-/* char (*(x[3])())[5] */
-int main(int argc, char const *argv[])
+int nexttoken(void);
+int prevtoken = NO;
+
+/* undc1: convert word description to declaration */
+int main()
 {
-	while (gettoken() != EOF) {		/* 1st token on line */
-		if (!checkdatatype(token))
-			printf("unknown datatype\n");
-		strcpy(datatype, token);	/* is the datatype */
-		out[0] = '\0'; // zet output naar niks
-		dc1();		/* parse rest of line */
-		if (tokentype != '\n')
-			printf("syntax error\n");
-		printf("%s: %s %s\n", name, out, datatype);
+	int type;
+	char temp[MAXTOKEN];
+	
+	while (gettoken() != EOF) {
+		strcpy(out, token);
+		while ((type = gettoken()) != '\n') { // uiteindelijk de newline 
+			if (type == PARENS || type == BRACKETS) {
+				strcat(out, token);
+			} else if (type == '*') {
+				if ((type = nexttoken()) == PARENS || type == BRACKETS)
+					sprintf(temp, "(*%s)", out);
+				else
+					sprintf(temp, "*%s", out);
+				strcpy(out, temp);
+			} else if (type == NAME) {
+				sprintf(temp, "%s %s", token, out);
+				strcpy(out, temp);
+			} else
+				printf("invalid input at %s\n", token);
+			printf("%s\n", out);
+		}
 	}
 	return 0;
 }
 
-/* dc1: parse a declarator */
-void dc1(void)
+int nexttoken(void)
 {
-	int ns; // aantal stars
+	int type;
+	extern int prevtoken;
 
-	for (ns = 0; gettoken() == '*'; ) /* count *`s */
-		ns++;
-	dirdc1();
-	while (ns-- > 0)
-		strcat(out, " pointer to");
-}
-
-/* dirdc1: parse a direct declarator */
-void dirdc1(void)
-{
-	int type;			/* ( dc1 ) */
-
-	if (tokentype == '(') {
-		dc1();
-		if (tokentype != ')')
-			printf("error: missing )\n");
-	} else if (tokentype == NAME) 	/* variable name */
-		strcpy(name, token);
-	else
-		printf("error: expected name or (dc1)\n");
-	while ((type=gettoken()) == PARENS || type == BRACKETS)
-		if (type == PARENS)
-			strcat(out, " function returning");
-		else {
-			strcat(out, " array");
-			strcat(out, token);
-			strcat(out, " of");
-		}
+	type = gettoken();
+	prevtoken = YES;
+	return type;
 }
 
 int gettoken(void) /* return next token */
@@ -76,6 +63,10 @@ int gettoken(void) /* return next token */
 	void ungetch();
 	char *p = token;
 
+	if (prevtoken == YES) {
+		prevtoken = NO;
+		return tokentype;
+	}
 	while ((c = getch()) == ' ' || c == '\t') /* skip spaces */
 		;
 	if (c == '(') { /* check for parenthesis token. if they are not immediatly closed return '(' as last token */
@@ -102,23 +93,6 @@ int gettoken(void) /* return next token */
 		return tokentype = c;
 }
 
-/* check if a given datatype is valid */
-int checkdatatype(char *s)
-{
-	char *datatypes[] = {
-		"char",
-		"int",
-		"double",
-		"float"
-	};
-	int i, datatypessize = 4, returnval = 0;
-
-	for (i = 0; i < datatypessize; i++ ) 
-		if (strcmp(s, datatypes[i]) == 0)
-			return returnval = 1;
-	return returnval;
-}
-
 /* getch and ungetch from chapter 4 */
 #define BUFSIZE 100
 
@@ -137,3 +111,4 @@ void ungetch(int c) /* push character back on input */
 	else
 		buf[bufp++] = c;
 }
+

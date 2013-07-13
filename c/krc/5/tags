@@ -3,15 +3,20 @@
 !_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
-!_TAG_PROGRAM_VERSION	5.8	//
-FALSE	oef5-11.c	9;"	d	file:
-MAXINPUT	oef5-11.c	11;"	d	file:
-TABSTOP	oef5-11.c	10;"	d	file:
-TRUE	oef5-11.c	8;"	d	file:
-detab1	oef5-11.c	/^void detab1(char s[])$/;"	f
-entab1	oef5-11.c	/^void entab1(char s[])$/;"	f
-getline1	oef5-11.c	/^int getline1(char s[], int lim)$/;"	f
-insstr	oef5-11.c	/^void insstr(char original[],char add[], int inspos)$/;"	f
-main	oef5-11.c	/^int main()$/;"	f
-makewhitespaces	oef5-11.c	/^void makewhitespaces(char s[], int size)$/;"	f
-removechar1	oef5-11.c	/^void removechar1(char s[], int pos)$/;"	f
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+BRACKETS	oef5-19.c	/^enum { NAME, PARENS, BRACKETS };$/;"	e	enum:__anon1	file:
+BUFSIZE	oef5-19.c	82;"	d	file:
+MAXTOKEN	oef5-19.c	7;"	d	file:
+NAME	oef5-19.c	/^enum { NAME, PARENS, BRACKETS };$/;"	e	enum:__anon1	file:
+PARENS	oef5-19.c	/^enum { NAME, PARENS, BRACKETS };$/;"	e	enum:__anon1	file:
+buf	oef5-19.c	/^char buf[BUFSIZE];	\/* buffer for ungetch *\/$/;"	v
+bufp	oef5-19.c	/^int bufp = 0;		\/* next free position in buf *\/$/;"	v
+datatype	oef5-19.c	/^char datatype[MAXTOKEN];	\/* data type = char, int , etc. *\/$/;"	v
+getch	oef5-19.c	/^int getch(void) \/* get a (possibly pushed back) character *\/$/;"	f
+gettoken	oef5-19.c	/^int gettoken(void) \/* return next token *\/$/;"	f
+main	oef5-19.c	/^main()$/;"	f
+name	oef5-19.c	/^char name[MAXTOKEN];		\/* identifier name *\/$/;"	v
+out	oef5-19.c	/^char out[1000];			\/* output string *\/$/;"	v
+token	oef5-19.c	/^char token[MAXTOKEN];		\/* last token of string *\/$/;"	v
+tokentype	oef5-19.c	/^int tokentype;			\/* type of last token *\/$/;"	v
+ungetch	oef5-19.c	/^void ungetch(int c) \/* push character back on input *\/$/;"	f

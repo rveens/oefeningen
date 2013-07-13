@@ -1,5 +1,5 @@
-/* Exercise 5.18. Make dc1 recover from input errors.
- * (invalid declarations, spurious blanks) */
+/* Exercise 5.20. Expand dc1 to handle declarations with function argument types,
+ * qualifiers like const, and so on. */
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -10,6 +10,7 @@ enum { NAME, PARENS, BRACKETS };
 
 void dc1(void);
 void dirdc1(void);
+int checkmodifier(char *s);
 int checkdatatype(char *s);
 
 int gettoken(void);
@@ -23,9 +24,18 @@ char out[1000];			/* output string */
 int main(int argc, char const *argv[])
 {
 	while (gettoken() != EOF) {		/* 1st token on line */
-		if (!checkdatatype(token))
-			printf("unknown datatype\n");
-		strcpy(datatype, token);	/* is the datatype */
+		if (checkmodifier(token)) {
+			strcpy(datatype, token);	/* is the datatype */
+			gettoken();
+			if (!checkdatatype(token)) /* check the datattype */
+				printf("unknown datatype/modifier\n");
+			strcat(datatype, " ");
+			strcat(datatype, token);	/* is the modifier */
+		} else { 
+			if (!checkdatatype(token)) /* check the datattype */
+				printf("unknown datatype/modifier\n");
+			strcpy(datatype, token);	/* is the datatype */
+		}
 		out[0] = '\0'; // zet output naar niks
 		dc1();		/* parse rest of line */
 		if (tokentype != '\n')
@@ -100,6 +110,20 @@ int gettoken(void) /* return next token */
 		return tokentype = NAME;
 	} else /* return last character as token if all else fails */
 		return tokentype = c;
+}
+
+int checkmodifier(char *s)
+{
+	char *modifiers[] = {
+		"const",
+		"volatile"
+	};
+	int i, datatypessize = 2, returnval = 0;
+
+	for (i = 0; i < datatypessize; i++ ) 
+		if (strcmp(s, modifiers[i]) == 0)
+			return returnval = 1;
+	return returnval;
 }
 
 /* check if a given datatype is valid */
