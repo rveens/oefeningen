@@ -13,7 +13,7 @@ flags = [
 # a "-std=<something>".
 # For a C project, you would set this to something like 'c99' instead of
 # 'c++11'.
-'-std=c++',
+'-std=c++11',
 # ...and the same thing goes for the magic -x option which specifies the
 # language that the files to be compiled are written in. This is mostly
 # relevant for c++ headers.
@@ -41,7 +41,9 @@ flags = [
 '-isystem',
 './tests/gmock',
 '-isystem',
-'./tests/gmock/include'
+'./tests/gmock/include',
+'-isystem',
+'/usr/lib64/gcc/x86_64-pc-linux-gnu/4.6.3/include/g++-v4/'
 ]
 
 # Set this to the absolute path to the folder (NOT the file!) containing the

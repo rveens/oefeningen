@@ -1,0 +1,15 @@
+Rick Veens vragen-destilaat "Aan de slag met C++"
+--------------------------------------------------------------------------------
+- Dreaded diamond
+	waarom moet je de constructor van de virtuele basisklasse aanroepen in de initialisatielijst van de onderkant van de diamond,?
+- Problemen met cin en getline()
+	Soms krijg je vreemde dingen; de buffer moet keeg gemaakt worden? Hoe?
+	Kun je testen op een bepaald type input (int)?
+- In het boek wordt aangegeven dat je een friendclass eigenlijk niet moet gebruiken
+	Wanneer moet je een friend class wel gebruiken (ipv public functies)
+		Er wordt "als de klasse echte niet zonder kan" genoemd
+	Als goed is is een friendclass gelijk aan een private inner class in java?
+		Een friend-functie betekend dat de functie aan te roepen is, één laag buiten de scope?
+- Bij een vector van 'Persoon'-en, wordt bij een iteratie alleen functies van een Persoon aangeroepen.
+	ookal overide je die met een subklasse etc, waarom?
+- Wanneer gebruik je bij een overerving private, en protected bij de defintie van de overerving ? (vooral protected kan ik me niet voorstellen)
