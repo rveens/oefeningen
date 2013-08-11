@@ -13,3 +13,4 @@ Rick Veens vragen-destilaat "Aan de slag met C++"
 - Bij een vector van 'Persoon'-en, wordt bij een iteratie alleen functies van een Persoon aangeroepen.
 	ookal overide je die met een subklasse etc, waarom?
 - Wanneer gebruik je bij een overerving private, en protected bij de defintie van de overerving ? (vooral protected kan ik me niet voorstellen)
+- Ik las ergens dat het aangeraden wordt om de destructor virtual te maken bij overerving, waarom is dit?
