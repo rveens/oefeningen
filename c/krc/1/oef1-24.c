@@ -67,7 +67,7 @@ int strContains(char s[], char character)
 
 	i = c = 0;
 
-	for(i = 0; (c = s[i]) != '\0'; i++)
+	for(; (c = s[i]) != '\0'; i++)
 		if(c == character)
 			return 1;
 	return 0;

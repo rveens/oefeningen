@@ -1,0 +1,1 @@
+cmd_/home/rick/Documenten/oefeningen/linux/helloworld.ko := ld -r -m elf_x86_64 -T /usr/src/linux-headers-3.11.0-18-generic/scripts/module-common.lds --build-id  -o /home/rick/Documenten/oefeningen/linux/helloworld.ko /home/rick/Documenten/oefeningen/linux/helloworld.o /home/rick/Documenten/oefeningen/linux/helloworld.mod.o
